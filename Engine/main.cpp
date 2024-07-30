@@ -47,10 +47,8 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 	return scale * translate;
 }
 
-//glm::mat4 matProj = glm::frustum(-1, +1, -1, 1, -1, 1);
 glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
 glm::mat4 matProj = glm::perspective(float(glm::radians(90.0f)), 1.0f, 0.1f, 150.0f);
-
 
 glm::vec3 vEye = {0.0, 30.0, 5.0};
 glm::vec3 vCenter = {0, 30, -100};//change later
@@ -66,12 +64,16 @@ GLint setUniform(GLuint shader, std::string uniformName) {
 	return pos;	
 }
 
-
-
 float vertices[9] = {
 	0.5, 0.2, 0.0,
 	-0.5, 0.2, 0.0,
 	0.0, 0.8, 0.0
+};
+
+float texCoord[6] = {
+	1.0, 0.0,
+	0.0, 0.0,
+	0.5, 1.0
 };
 
 
@@ -97,13 +99,14 @@ int main() {
 	glBindVertexArray(VAOs[0]);
 	glGenBuffers(1, Buffers);
 	glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(vertices), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(texCoord), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(vertices), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(texCoord), texCoord);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)(0));
-	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)(sizeof(float) * 9));
 
-	
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 	ShaderSource source = ReadShaderCode("firstpassVS.glsl", "firstpassFS.glsl");
 	GLuint firstpass = CreateShader(source.VertexSource, source.FragmentSource);
@@ -116,12 +119,12 @@ int main() {
 	GLint mProj = setUniform(firstpass, "matProj");
 	glUniformMatrix4fv(mProj, 1, GL_FALSE, glm::value_ptr(matProj));
 
-
-	texture triangle(2);
+	texture triangle(1);
 	std::vector<std::string>triangle_name;
-	triangle_name.push_back("test.jpg");
-	triangle_name.push_back("test2.jpg");
+	triangle_name.push_back("E:/NEW_DOanload/test.jpg");
 	triangle.load_texture(triangle_name);
+	triangle.tex_to_shader(firstpass);
+
 
 	glfwSwapInterval(20);
 	//glEnable(GL_DEPTH_TEST);
@@ -129,28 +132,17 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::vec3 PosTri = { 10, -0.2, 0 };
-		glm::vec3 SizTri = { 1000, 1000, 1 };
+		glm::vec3 SizTri = { 2000, 2000, 1 };
 
 		glm::mat4 modeltoworld = createGeometricToWorldMatrix(PosTri, glm::vec3(0, 0, 0), SizTri);
 		GLint mMpos = setUniform(firstpass, "matModel");
 		glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
-		//glUseProgram(shader_textured);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, texture_id[0]);
-		//glBindVertexArray(VAOs[0]);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 		{
 			printf("OpenGL error: %d\n", err);
 		}
 		glUseProgram(firstpass);
-		//glActiveTexture(GL_TEXTURE0); // if I change to texture1, it will use thee previosu texture? I guess it's cyclign? 
-		//glBindTexture(GL_TEXTURE_2D, texture_id[1]);
-		//glm::mat4 model = glm::mat4(1.0f);
-
-		//ourModel.Draw(shader);
-
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//glBindVertexArray(VAOs[2]);
@@ -158,7 +150,7 @@ int main() {
 		modeltoworld = createGeometricToWorldMatrix(PosTri, glm::vec3(0, 0, 0), SizTri);
 		mMpos = setUniform(firstpass, "matModel");
 		glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
-		glDrawArrays(GL_TRIANGLES, 3, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		//glDrawArrays(GL_TRIANGLES, 3, 3);
 		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);

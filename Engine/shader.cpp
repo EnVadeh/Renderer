@@ -15,7 +15,6 @@ ShaderSource ReadShaderCode(const char* filepath1, const char* filepath2) {
 	while (std::getline(ShaderFile2, line2)) {
 		ShaderCode2 += line2 + "\n";
 	}
-	printf("%s", ShaderCode2.c_str());
 	ShaderFile2.close();
 	return { ShaderCode1.c_str(), ShaderCode2.c_str() };
 }

@@ -151,6 +151,9 @@
     <None Include="firstpassFS.glsl" />
     <None Include="firstpassVS.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\NEW_DOanload\test.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

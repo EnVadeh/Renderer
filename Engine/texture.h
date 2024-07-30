@@ -14,6 +14,7 @@ public:
 	texture(int num);
 	void bindTexture();
 	void load_texture(std::vector<std::string> texture_names);
+	void tex_to_shader(GLuint shader_id);
 };
 
 //note for future, do we want each texture class to have n number of textures and make an array of
