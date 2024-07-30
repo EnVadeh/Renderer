@@ -7,13 +7,13 @@
 class texture {
 public:
 	std::vector<GLuint> texture_id;
-	int width;
-	int height;
-	int nrChannels;
-	int number;
+	std::vector<int> width;
+	std::vector<int> height;
+	std::vector<int> nrChannels;
+	size_t number;
 	texture(int num);
 	void bindTexture();
-	void load_texture(std::string texture_name);
+	void load_texture(std::vector<std::string> texture_names);
 };
 
 //note for future, do we want each texture class to have n number of textures and make an array of

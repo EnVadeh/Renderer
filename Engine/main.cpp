@@ -117,22 +117,11 @@ int main() {
 	glUniformMatrix4fv(mProj, 1, GL_FALSE, glm::value_ptr(matProj));
 
 
-	//GLuint texture_id[2];
-	//glGenTextures(2, texture_id);
-	//glBindTexture(GL_TEXTURE_2D, texture_id[0]);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //s is x coord
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //t is y coord
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//int width, height, nrChannels;
-	//unsigned char* data = stbi_load("new_texture.jpg", &width, &height, &nrChannels, 0);
-
-	//if (data) {
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//	glGenerateMipmap(GL_TEXTURE_2D);
-	//}
-	//stbi_image_free(data);
-
+	texture triangle(2);
+	std::vector<std::string>triangle_name;
+	triangle_name.push_back("test.jpg");
+	triangle_name.push_back("test2.jpg");
+	triangle.load_texture(triangle_name);
 
 	glfwSwapInterval(20);
 	//glEnable(GL_DEPTH_TEST);
