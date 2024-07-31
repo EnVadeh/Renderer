@@ -56,6 +56,7 @@ glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
 
 glm::mat4 matOrtho = glm::ortho(-1, 1, -1, 1);
+glm::mat4 matProjView = matProj * matView;
 
 GLint setUniform(GLuint shader, std::string uniformName) {
 	glUseProgram(shader);
@@ -114,16 +115,24 @@ int main() {
 	glUseProgram(firstpass);
 	GLint mNorm = setUniform(firstpass, "matWorld");
 	glUniformMatrix4fv(mNorm, 1, GL_FALSE, glm::value_ptr(NDC));
-	GLint mView = setUniform(firstpass, "matView");
-	glUniformMatrix4fv(mView, 1, GL_FALSE, glm::value_ptr(matView));
-	GLint mProj = setUniform(firstpass, "matProj");
-	glUniformMatrix4fv(mProj, 1, GL_FALSE, glm::value_ptr(matProj));
+	GLint mPV = setUniform(firstpass, "matProjView");
+	glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
 
-	texture triangle(1);
+	std::string texName = "triangle";
+	texture triangle(2, texName);
 	std::vector<std::string>triangle_name;
 	triangle_name.push_back("E:/NEW_DOanload/test.jpg");
+	triangle_name.push_back("E:/NEW_DOanload/parrots.jpg");
 	triangle.load_texture(triangle_name);
 	triangle.tex_to_shader(firstpass);
+	std::string texName2 = "square";
+	texture square(2, texName2);
+	std::vector<std::string>square_name;
+	square_name.push_back("E:/NEW_DOanload/parrots.jpg");
+	square_name.push_back("E:/NEW_DOanload/test.jpg");
+	square.load_texture(square_name);
+	square.tex_to_shader(firstpass);
+
 
 
 	glfwSwapInterval(20);
@@ -144,12 +153,14 @@ int main() {
 		}
 		glUseProgram(firstpass);
 		glBindVertexArray(VAOs[0]);
+		triangle.bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//glBindVertexArray(VAOs[2]);
 		PosTri = { -2000, 200, 1 };
 		modeltoworld = createGeometricToWorldMatrix(PosTri, glm::vec3(0, 0, 0), SizTri);
 		mMpos = setUniform(firstpass, "matModel");
 		glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
+		square.bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		//glDrawArrays(GL_TRIANGLES, 3, 3);
