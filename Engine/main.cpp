@@ -96,18 +96,6 @@ int main() {
 		return -1;
 	}
 
-	glGenVertexArrays(1, VAOs);
-	glBindVertexArray(VAOs[0]);
-	glGenBuffers(1, Buffers);
-	glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(texCoord), NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(texCoord), texCoord);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)(0));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)(sizeof(float) * 9));
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
 
 	ShaderSource source = ReadShaderCode("firstpassVS.glsl", "firstpassFS.glsl");
 	GLuint firstpass = CreateShader(source.VertexSource, source.FragmentSource);
