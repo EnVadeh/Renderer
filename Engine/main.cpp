@@ -10,6 +10,8 @@
 #include "mesh.h"
 #include "model.h"
 #include "texture.h"
+#include "buffer.h"
+#include "utils.h"
 
 enum VAO_IDS { Particle, Light, Moveable, Textured_Particle, Triangle_Object, NumVAOs }; // numvaos has the value of how many elements are there in the enum. Can add other shit like {Triangles, Polygons, Circles, NumVAOs}, the enum value will be 3, starting form 0 of the left. This way we don't need to constantly update the value of How many number of vertices we need
 enum Buffer_IDs { ArrayBuffer, ElementBuffer, TextureBuffer, NumBuffers };
@@ -21,15 +23,7 @@ GLuint Buffers[NumBuffers];
 
 //so model coordinates are there, we have then the "position" coordinate which will take the center of the model and will transform the model coordinates to the world space
 
-glm::mat4 createGeometricToWorldMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
- 	
-	glm::mat4 Scale = glm::scale(glm::mat4(1.0f), scale);
-	//model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	//model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	//model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 Trans = glm::translate(glm::mat4(1.0f), position);
-	return Trans * Scale;
-}
+
 
 glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
 	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(
@@ -58,26 +52,27 @@ glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
 glm::mat4 matOrtho = glm::ortho(-1, 1, -1, 1);
 glm::mat4 matProjView = matProj * matView;
 
-GLint setUniform(GLuint shader, std::string uniformName) {
-	glUseProgram(shader);
-	const char* uniformNameptr = &uniformName[0];
-	GLint pos = glGetUniformLocation(shader, uniformNameptr);
-	return pos;	
-}
-
-float vertices[9] = {
+float vertices[18] = {
+	0.5, 0.2, 0.0,
+	-0.5, 0.2, 0.0,
+	0.0, 0.8, 0.0,
 	0.5, 0.2, 0.0,
 	-0.5, 0.2, 0.0,
 	0.0, 0.8, 0.0
+
 };
 
-float texCoord[6] = {
+float texCoord[12] = {
+	1.0, 0.0,
+	0.0, 0.0,
+	0.5, 1.0,
 	1.0, 0.0,
 	0.0, 0.0,
 	0.5, 1.0
 };
 
-
+float Pos[6] = {2000, -0.2, 0, -80, -0.2, 0};
+float Size[6] = {2000, 2000, 1, 2000, 2000, 1};
 // I wanna make a realistic lighting 
 
 int main() {
@@ -106,6 +101,10 @@ int main() {
 	GLint mPV = setUniform(firstpass, "matProjView");
 	glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
 
+
+	MeshBuffer Triangle;
+	Triangle.setVertices(vertices, texCoord, Pos, Size, firstpass, false, 6);
+
 	std::string texName = "triangle";
 	texture triangle(2, texName);
 	std::vector<std::string>triangle_name;
@@ -122,36 +121,25 @@ int main() {
 	square.tex_to_shader(firstpass);
 
 
-
 	glfwSwapInterval(20);
 	//glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::vec3 PosTri = { 10, -0.2, 0 };
-		glm::vec3 SizTri = { 2000, 2000, 1 };
-
-		glm::mat4 modeltoworld = createGeometricToWorldMatrix(PosTri, glm::vec3(0, 0, 0), SizTri);
-		GLint mMpos = setUniform(firstpass, "matModel");
-		glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 		{
 			printf("OpenGL error: %d\n", err);
 		}
 		glUseProgram(firstpass);
-		glBindVertexArray(VAOs[0]);
+		//glBindVertexArray(VAOs[0]);
 		triangle.bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		Triangle.DrawCall(firstpass, 2);
+		//what if I wanan bind different textures? Interesting!
 		//glBindVertexArray(VAOs[2]);
-		PosTri = { -2000, 200, 1 };
-		modeltoworld = createGeometricToWorldMatrix(PosTri, glm::vec3(0, 0, 0), SizTri);
-		mMpos = setUniform(firstpass, "matModel");
-		glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
 		square.bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		//glDrawArrays(GL_TRIANGLES, 3, 3);
+
 		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		//glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0, 3);
 		//glMultiDrawElements(GL_TRIANGLES, first_vp, GL_UNSIGNED_INT, triangle_multielements_offsets, 4);
