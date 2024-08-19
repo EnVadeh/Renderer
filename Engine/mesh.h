@@ -1,5 +1,6 @@
 #pragma once
 #include "shader.h"
+#include "texture.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -9,7 +10,7 @@
 #include <GL/glew.h>
 #include <iostream>
 #include "stb_image.h"
-
+#include "utils.h"
 
 struct Vertex {
 	glm::vec3 Position;
@@ -19,6 +20,7 @@ struct Vertex {
 	glm::vec3 Bitangent;
 };
 
+
 struct Texture {
 	unsigned int id;
 	std::string Type;
@@ -26,7 +28,8 @@ struct Texture {
 };
 
 class Mesh {
-	unsigned int VAO, VBO, EBO;
+	GLuint VAO;
+	GLuint Buffers[BufferAttribs::NumBuffers];
 	void SetupMesh();
 
 public:

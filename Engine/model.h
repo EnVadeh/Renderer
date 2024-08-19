@@ -10,7 +10,7 @@ public:
 	{
 		loadModel(path);
 	}
-	void Draw(unsigned int shader);
+	void Draw(unsigned int shader, glm::vec3 Pos, glm::vec3 Size, GLuint shaderID);
 private:
 	std::string directory;
 

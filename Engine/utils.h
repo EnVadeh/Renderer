@@ -8,3 +8,11 @@
 
 GLint setUniform(GLuint shader, std::string uniformName);
 glm::mat4 createGeometricToWorldMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+
+struct BufferAttribs {
+	//enum VAO_IDs { Triangles, NumVAOs };
+	enum Buffer_IDs { ArrayBuffer, ElementBuffer, NumBuffers };
+	enum Attrib_IDs { vPos, vTex, vNormal };
+	//GLuint VAOs[NumVAOs];
+	GLuint Buffers[NumBuffers];
+};

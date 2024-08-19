@@ -73,6 +73,9 @@ float Pos[6] = {2000, -0.2, 0, -80, -0.2, 0};
 float Size[6] = {2000, 2000, 1, 2000, 2000, 1};
 // I wanna make a realistic lighting 
 
+std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
+
+
 int main() {
 	if (!glfwInit()) {
 		return -1;
@@ -100,25 +103,27 @@ int main() {
 	glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
 
 
-	MeshBuffer Triangle;
-	Triangle.setVertices(vertices, texCoord, Pos, Size, firstpass, false, 6);
+	//MeshBuffer Triangle;
+	//Triangle.setVertices(vertices, texCoord, Pos, Size, firstpass, false, 6);
 
-	std::string texName = "triangle";
-	texture triangle(2, texName);
-	std::vector<std::string>triangle_name;
-	triangle_name.push_back("E:/NEW_DOanload/test.jpg");
-	triangle_name.push_back("E:/NEW_DOanload/parrots.jpg");
-	triangle.load_texture(triangle_name);
-	triangle.tex_to_shader(firstpass);
-	std::string texName2 = "square";
-	texture square(2, texName2);
-	std::vector<std::string>square_name;
-	square_name.push_back("E:/NEW_DOanload/parrots.jpg");
-	square_name.push_back("E:/NEW_DOanload/test.jpg");
-	square.load_texture(square_name);
-	square.tex_to_shader(firstpass);
+	//std::string texName = "triangle";
+	//texture triangle(2, texName);
+	//std::vector<std::string>triangle_name;
+	//triangle_name.push_back("E:/NEW_DOanload/test.jpg");
+	//triangle_name.push_back("E:/NEW_DOanload/parrots.jpg");
+	//triangle.load_texture(triangle_name);
+	//triangle.tex_to_shader(firstpass);
+	//std::string texName2 = "square";
+	//texture square(2, texName2);
+	//std::vector<std::string>square_name;
+	//square_name.push_back("E:/NEW_DOanload/parrots.jpg");
+	//square_name.push_back("E:/NEW_DOanload/test.jpg");
+	//square.load_texture(square_name);
+	//square.tex_to_shader(firstpass);
 
-
+	Model NewModel(&path[0]);
+	glm::vec3 posi = { 0, 0, 0 };
+	glm::vec3 sizi = { 1000, 1000, 1 };
 	glfwSwapInterval(20);
 	//glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
@@ -131,11 +136,12 @@ int main() {
 		}
 		glUseProgram(firstpass);
 		//glBindVertexArray(VAOs[0]);
-		triangle.bind();
-		Triangle.DrawCall(firstpass, 2);
+		//triangle.bind();
+		NewModel.Draw(firstpass, posi, sizi, firstpass);
+		//Triangle.DrawCall(firstpass, 2);
 		//what if I wanan bind different textures? Interesting!
 		//glBindVertexArray(VAOs[2]);
-		square.bind();
+		//square.bind();
 
 
 		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);

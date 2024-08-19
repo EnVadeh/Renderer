@@ -4,28 +4,25 @@
 
 struct vertex {
 	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::vec2 texCoord;
 };
 
-struct BufferAttribs {
-	enum VAO_IDs { Triangles, NumVAOs };
-	enum Buffer_IDs { ArrayBuffer, TextureBuffer, NumBuffers};
-	enum Attrib_IDs { vPos, vTex};
-	GLuint VAOs[NumVAOs];
-	GLuint Buffers[NumBuffers];
-};
+
 
 class MeshBuffer {
 private:
-	GLuint VAOs[BufferAttribs::NumVAOs];
+	//GLuint VAOs[BufferAttribs::NumVAOs];
+	GLuint VAO;
 	GLuint Buffers[BufferAttribs::NumBuffers];
-	std::vector<GLfloat> vertex;
-	std::vector<GLfloat> texCoord;
+	std::vector<vertex> vertices;
+	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> Pos;
 	std::vector<glm::vec3> Size;
 	bool samesize;
 	
 public:
-	void setVertices(GLfloat vertices[], GLfloat texCoords[], GLfloat Pos[], GLfloat Size[], GLuint shaderID, bool size, int number);
-	void DrawCall(GLuint shaderID, int number);
+	void setVertices(std::vector<vertex> vertices, std::vector<unsigned int> indices);
+	void DrawCall(GLuint shaderID);
 };
 

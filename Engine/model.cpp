@@ -1,11 +1,15 @@
 #include "model.h"
 
-void Model::Draw(unsigned int shader) {
+void Model::Draw(GLuint shader , glm::vec3 Pos, glm::vec3 Size, GLuint shaderID) {
+	glm::mat4 mtw = createGeometricToWorldMatrix(Pos, glm::vec3(0, 0, 0), Size);
+	GLint mMpos = setUniform(shader, "matModel");
+	glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(mtw));
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
 }
 
 void Model::loadModel(std::string path) {
+	
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -37,14 +41,14 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+	for (size_t i = 0; i < mesh->mNumVertices; i++) {
 		Vertex vertex;
 		glm::vec3 vector;
 		vector.x = mesh->mVertices[i].x;
 		vector.y = mesh->mVertices[i].y;
 		vector.z = mesh->mVertices[i].z;
 		vertex.Position = vector;
-		std::cout << "Vertex Positions are: " << vertex.Position[0] << vertex.Position[1] << vertex.Position[2] << std::endl;
+		std::cout << "Vertex Positions are: " << vertex.Position[0] <<" " << vertex.Position[1] <<" " << vertex.Position[2] << std::endl;
 
 		if (mesh->HasNormals()) {
 			vector.x = mesh->mNormals[i].x;
@@ -75,10 +79,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 		vertices.push_back(vertex);
 	}
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+	for (size_t i = 0; i < mesh->mNumFaces; i++) {
 
 		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		for (size_t j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -105,58 +109,18 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	return Mesh(vertices, indices, textures);
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory)
-{
-	std::string filename = std::string(path);
-	filename = directory + '/' + filename;
-
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
-}
-
 
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	Assimp::Importer importer;
 	std::vector<Texture> textures;
 	std::cout << "This is for " << typeName << std::endl;
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+	for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
 		bool skip = false;
 		std::cout << "Inside the if loop" << str.C_Str();
-		for (unsigned int j = 0; j < textures_loaded.size(); j++) {
+		for (size_t j = 0; j < textures_loaded.size(); j++) {
 			std::cout << "The value of i : " << i << " and the loop should happen less than this times: " << textures_loaded.size();
 			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
 				textures.push_back(textures_loaded[j]);
@@ -169,7 +133,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		if (!skip)
 		{
 			Texture texture;
-			texture.id = TextureFromFile(str.C_Str(), this->directory);
+			texture.id = load_individual_texture(str.C_Str(), this->directory);
 			texture.Type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);
