@@ -23,8 +23,6 @@ GLuint Buffers[NumBuffers];
 
 //so model coordinates are there, we have then the "position" coordinate which will take the center of the model and will transform the model coordinates to the world space
 
-
-
 glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
 	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(
 		2.0f / (maxX - minX),

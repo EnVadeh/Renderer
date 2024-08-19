@@ -64,8 +64,5 @@ void MeshBuffer::DrawCall(GLuint shaderID, int number){
 			glDrawArrays(GL_TRIANGLES, i * 3, 3);
 		}
 	}
-	//glm::mat4 modeltoworld = createGeometricToWorldMatrix(Pos[number - 1], glm::vec3(0, 0, 0), Size[number - 1]);
-	//GLint mMpos = setUniform(shaderID, "matModel");
-	//glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(modeltoworld));
-	//glDrawArrays(GL_TRIANGLES, 0, number*3);
+
 }

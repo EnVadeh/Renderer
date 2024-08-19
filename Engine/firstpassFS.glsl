@@ -8,5 +8,5 @@ in vec2 fTexCoord;
 out vec4 outColor;
 
 void main(){
-	outColor = texture(triangle0, fTexCoord);
+	outColor = texture(triangle1, fTexCoord);
 }
