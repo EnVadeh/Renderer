@@ -6,30 +6,31 @@
 struct vertex {
 	glm::vec3 Position;
 	glm::vec2 texCoord;
+	glm::vec3 Normal;
 };
 
-class MeshBuffer {
+class TerrainBuffer {
 private:
 	//GLuint VAOs[BufferAttribs::NumVAOs];
 	GLuint VAO;
 	GLuint Buffers[BufferAttribs::NumBuffers];
-	std::vector<GLfloat> vertex;
-	std::vector<GLfloat> texCoord;
-	std::vector<glm::vec3> Pos;
-	std::vector<glm::vec3> Size;
-	bool samesize;
-	
+	std::vector<vertex> vertices;
+	std::vector<GLuint> indices;
+	size_t terrainW, terrainH;
+	std::string name = "terrain";
+	texture terrain;
 public:
-	void setVertices(GLfloat vertices[], GLfloat texCoords[], GLfloat Pos[], GLfloat Size[], GLuint shaderID, bool size, int number);
-	void DrawCall(GLuint shaderID, int number);
+	TerrainBuffer(size_t width, size_t height, std::vector<std::string> texName);
+	void TerrainDraw(GLuint shaderID);
+	
 };
 
 class FrameBuffer {
 private: 
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 	GLuint FBO;
 	GLuint RBO;
-	GLuint render_texture;
+	std::vector<GLuint> render_texture;
 public: 
 	GLuint setupFrameBuffer();
 	GLuint renderTexture();

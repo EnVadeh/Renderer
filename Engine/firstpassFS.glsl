@@ -10,7 +10,8 @@ in vec2 fTexCoord;
 in vec3 fNorm;
 in vec4 vPos;
 
-out vec4 outColor;
+layout (location = 0) out vec3 outColor;
+layout (location = 1) out vec3 outNorm;
 
 void main(){
 	//outColor = texture(texture_diffuse1, fTexCoord);
@@ -24,10 +25,11 @@ void main(){
 	float SpecPower = pow(max(dot(refLightDir, cameraDir), 0.0), 32);
 
 
-	float fAmbient = 0.3;
+	float fAmbient = 0.5;
 
-	//outColor = texture(texture_diffuse1, fTexCoord) * (DiffPower + SpecPower) * fAmbient;
-	outColor = vec4(DiffPower);
-	//outColor = vec4(1.0, 1.0, 1.0, 1.0);
+	outColor = vec3(texture(texture_diffuse1, fTexCoord) * (DiffPower + SpecPower) * fAmbient);
+	//outColor = vec3(DiffPower + SpecPower) * fAmbient;
+	outNorm = normalize(fNorm);
+	//outColor = vec3(1.0, 1.0, 1.0);
 	
 }

@@ -158,6 +158,8 @@
     <None Include="RenderQuadShaderVS.glsl" />
     <None Include="shadowmapFS.glsl" />
     <None Include="shadowmapVS.glsl" />
+    <None Include="terrainFS.glsl" />
+    <None Include="terrainVS.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\NEW_DOanload\test.jpg" />

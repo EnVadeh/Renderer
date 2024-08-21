@@ -91,6 +91,12 @@
     <None Include="RenderQuadShaderFS.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="terrainVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="terrainFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\NEW_DOanload\test.jpg">

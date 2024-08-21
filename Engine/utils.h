@@ -17,4 +17,12 @@ struct BufferAttribs {
 	GLuint Buffers[NumBuffers];
 };
 
+static const std::string RenderTextureNames[3] = {
+    "colorRT",
+    "normalRT",
+    "depthRT"
+};
+
+
+
 

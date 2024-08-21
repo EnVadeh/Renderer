@@ -20,6 +20,11 @@ public:
 	void bind();
 };
 
+
+class balls {
+public:
+	balls(int x);
+};
 GLuint load_individual_texture(const char* path, const std::string& directory);
 
 //note for future, do we want each texture class to have n number of textures and make an array of
