@@ -1,5 +1,6 @@
 #version 430 core
 
+uniform mat4 matWorld;
 uniform mat4 matModel;
 uniform mat4 matProjView;
 

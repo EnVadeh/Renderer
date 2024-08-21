@@ -39,42 +39,50 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 	return scale * translate;
 }
 
-glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
-glm::mat4 matProj = glm::perspective(float(glm::radians(90.0f)), 1.0f, 0.1f, 150.0f);
+//glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
+glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
-glm::vec3 vEye = {0.0, 30.0, 5.0};
-glm::vec3 vCenter = {0, 30, -100};//change later
+glm::vec3 vEye = {0, 10.0, 100.0};
+glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
-
-glm::mat4 matOrtho = glm::ortho(-1, 1, -1, 1);
 glm::mat4 matProjView = matProj * matView;
 
-float vertices[18] = {
-	0.5, 0.2, 0.0,
-	-0.5, 0.2, 0.0,
-	0.0, 0.8, 0.0,
-	0.5, 0.2, 0.0,
-	-0.5, 0.2, 0.0,
-	0.0, 0.8, 0.0
+glm::mat4 matOrtho = glm::ortho(-1, 1, -1, 1);
 
-};
 
-float texCoord[12] = {
-	1.0, 0.0,
-	0.0, 0.0,
-	0.5, 1.0,
-	1.0, 0.0,
-	0.0, 0.0,
-	0.5, 1.0
-};
-
-float Pos[6] = {2000, -0.2, 0, -80, -0.2, 0};
-float Size[6] = {2000, 2000, 1, 2000, 2000, 1};
 // I wanna make a realistic lighting 
 
-std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
+//std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
+//std::string path = "E:/NEW_DOanload/TransCube.obj";
+//std::string path = "E:/NEW_DOanload/simple-sphere/source/YourMesh.obj";
+//std::string path = "E:/NEW_DOanload/round-meal-low-poly-free/source/Roundmeal.obj";
+std::string path = "C:/Users/broia/Downloads/tkf28u03u0ow-3dbuch/3dbuch/book.obj";
 
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	// Light position controls
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		vEye.x += 10;
+		vCenter.x += 10;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+		vEye.x -= 10;
+		vCenter.x -= 10;
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		vEye.y += 1;
+		vCenter.y += 1;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		vEye.y -= 1;
+		vCenter.y -= 1;
+	}
+	std::cout << "Camera Pos: " << vEye.x << " " << vEye.y << std::endl;
+}
 
 int main() {
 	if (!glfwInit()) {
@@ -93,25 +101,33 @@ int main() {
 	}
 
 
+
 	ShaderSource source = ReadShaderCode("firstpassVS.glsl", "firstpassFS.glsl");
 	GLuint firstpass = CreateShader(source.VertexSource, source.FragmentSource);
 
+	source = ReadShaderCode("shadowmapVS.glsl", "shadowmapFS.glsl");
+	GLuint shadowpass = CreateShader(source.VertexSource, source.FragmentSource);
+
+	source = ReadShaderCode("RenderQuadShaderVS.glsl", "RenderQuadShaderFS.glsl");
+	GLuint renderpass = CreateShader(source.VertexSource, source.FragmentSource);
+
+	glm::vec4 lightPos = {0, 100, -800, 1};
 	glUseProgram(firstpass);
-	GLint mNorm = setUniform(firstpass, "matWorld");
-	glUniformMatrix4fv(mNorm, 1, GL_FALSE, glm::value_ptr(NDC));
-	GLint mPV = setUniform(firstpass, "matProjView");
-	glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
+	
+	GLint vecCamPos = setUniform(firstpass, "fCamPos");
+	glUniform3fv(vecCamPos, 1, glm::value_ptr(vEye));
+	
+	GLint FBMatProjView = setUniform(shadowpass, "matProjView");
+	glUniformMatrix4fv(FBMatProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
 
 
-	//MeshBuffer Triangle;
-	//Triangle.setVertices(vertices, texCoord, Pos, Size, firstpass, false, 6);
 
 	//std::string texName = "triangle";
 	//texture triangle(2, texName);
 	//std::vector<std::string>triangle_name;
 	//triangle_name.push_back("E:/NEW_DOanload/test.jpg");
 	//triangle_name.push_back("E:/NEW_DOanload/parrots.jpg");
-	//triangle.load_texture(triangle_name);
+	//triangle.load_textures_manual(triangle_name);
 	//triangle.tex_to_shader(firstpass);
 	//std::string texName2 = "square";
 	//texture square(2, texName2);
@@ -122,37 +138,60 @@ int main() {
 	//square.tex_to_shader(firstpass);
 
 	Model NewModel(&path[0]);
-	glm::vec3 posi = { 0, 0, 0 };
-	glm::vec3 sizi = { 1000, 1000, 1 };
-	glfwSwapInterval(20);
-	//glEnable(GL_DEPTH_TEST);
+
+	
+	glm::vec3 posi = { 0, 0, -1000 };
+	glm::vec3 sizi = { 100, 100, 100 };
+
+	glm::vec3 posi2 = { +1800, 0, 0 };
+	glm::vec3 sizi2 = { 500, 500, 1000 };
+	
+	FrameBuffer ShadowMap;
+	GLuint ShadowTex = ShadowMap.setupFrameBuffer();
+	ScreenQuad SQ;
+
+	glfwSwapInterval(60);
+
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR)
-		{
-			printf("OpenGL error: %d\n", err);
-		}
-		glUseProgram(firstpass);
-		//glBindVertexArray(VAOs[0]);
-		//triangle.bind();
-		NewModel.Draw(firstpass, posi, sizi, firstpass);
-		//Triangle.DrawCall(firstpass, 2);
-		//what if I wanan bind different textures? Interesting!
-		//glBindVertexArray(VAOs[2]);
-		//square.bind();
+		glEnable(GL_DEPTH_TEST);
+		glViewport(0, 0, 2048, 2048);
+		glBindFramebuffer(GL_FRAMEBUFFER, ShadowTex);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
+		glUseProgram(shadowpass);
+		////set lightSpace Matrix right here
+		NewModel.Draw(posi, sizi, shadowpass);
+		////NewModel.Draw(posi2, sizi2, shadowShader);
 
-		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-		//glDrawElementsBaseVertex(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0, 3);
-		//glMultiDrawElements(GL_TRIANGLES, first_vp, GL_UNSIGNED_INT, triangle_multielements_offsets, 4);
-		//glMultiDrawArrays(GL_TRIANGLES, first_vp, count_vp, 4);
-		//glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
-		//GLint source_DiffusePos = glGetUniformLocation(shader, "material.vDiffuse_Pos");
-		//GLint source_view = glGetUniformLocation(shader, "mView");
-		//glUniformMatrix4fv(source_view, 1, GL_FALSE, glm::value_ptr(mView));
-		//glUniform3fv(source_DiffusePos, 1, vDiffPos);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, 1000, 1000);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		//processInput(window);
+
+		//while ((err = glGetError()) != GL_NO_ERROR)
+		//{
+		//	printf("OpenGL error: %d\n", err);
+		//}
+		//glUseProgram(firstpass);
+		////lightPos.z -= 10;
+		//std::cout << "Light pos: " << lightPos.z << std::endl;
+		//GLint vecLightPos = setUniform(firstpass, "fLightPos");
+		//glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
+		//matView = glm::lookAt(vEye, vCenter, vUp);
+		//matProjView = matProj * matView;
+		//GLint mPV = setUniform(firstpass, "matProjView");
+		//glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
+
+		//NewModel.Draw(posi, sizi, firstpass);
+		//NewModel.Draw(posi2, sizi2, firstpass);
+		ShadowMap.ActivateRenderTexture(renderpass);
+		
+		//QQQ.DrawQUD();
+		SQ.drawQuad(renderpass);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

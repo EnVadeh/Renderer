@@ -79,6 +79,18 @@
     <None Include="firstpassFS.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shadowmapVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shadowmapFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="RenderQuadShaderVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="RenderQuadShaderFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\NEW_DOanload\test.jpg">

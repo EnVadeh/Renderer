@@ -29,6 +29,7 @@ struct Texture {
 
 class Mesh {
 	GLuint VAO;
+	
 	GLuint Buffers[BufferAttribs::NumBuffers];
 	void SetupMesh();
 

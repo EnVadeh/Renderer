@@ -16,3 +16,5 @@ struct BufferAttribs {
 	//GLuint VAOs[NumVAOs];
 	GLuint Buffers[NumBuffers];
 };
+
+

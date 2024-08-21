@@ -12,3 +12,4 @@ GLint setUniform(GLuint shader, std::string uniformName) {
 	GLint pos = glGetUniformLocation(shader, uniformNameptr);
 	return pos;
 }
+

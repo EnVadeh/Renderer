@@ -154,6 +154,10 @@
   <ItemGroup>
     <None Include="firstpassFS.glsl" />
     <None Include="firstpassVS.glsl" />
+    <None Include="RenderQuadShaderFS.glsl" />
+    <None Include="RenderQuadShaderVS.glsl" />
+    <None Include="shadowmapFS.glsl" />
+    <None Include="shadowmapVS.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\NEW_DOanload\test.jpg" />

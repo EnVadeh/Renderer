@@ -1,11 +1,11 @@
 #include "model.h"
 
-void Model::Draw(GLuint shader , glm::vec3 Pos, glm::vec3 Size, GLuint shaderID) {
+void Model::Draw(glm::vec3 Pos, glm::vec3 Size, GLuint shaderID) {
 	glm::mat4 mtw = createGeometricToWorldMatrix(Pos, glm::vec3(0, 0, 0), Size);
-	GLint mMpos = setUniform(shader, "matModel");
+	GLint mMpos = setUniform(shaderID, "matModel");
 	glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(mtw));
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+		meshes[i].Draw(shaderID);
 }
 
 void Model::loadModel(std::string path) {
@@ -115,6 +115,8 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 	Assimp::Importer importer;
 	std::vector<Texture> textures;
 	std::cout << "This is for " << typeName << std::endl;
+
+	stbi_set_flip_vertically_on_load(true);
 	for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
