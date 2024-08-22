@@ -23,15 +23,18 @@ TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::strin
             size_t i2 = x + (z + 1) * terrainW;
             size_t i3 = x + 1 + (z + 1) * terrainW;
 
-            glm::vec3 v0 = vertices[i1].Position - vertices[i0].Position;
-            glm::vec3 v1 = vertices[i2].Position - vertices[i0].Position;
+            glm::vec3 v0 = vertices[i2].Position - vertices[i0].Position;
+            glm::vec3 v1 = vertices[i1].Position - vertices[i0].Position;
 
             glm::vec3 normal = glm::normalize(glm::cross(v0, v1));
+
+			//std::cout << "The nromals: " << normal.x << " " << normal.y << " " << normal.z << std::endl;
 
             vertices[i0].Normal += normal;
             vertices[i1].Normal += normal;
             vertices[i2].Normal += normal;
             vertices[i3].Normal += normal;
+			//std::cout<<"Normals of vertices: "<< vertices[i0].Normal.x << " " << vertices[i0].Normal.y << " " << vertices[i0].Normal.z << std::endl;
 
             indices.push_back(i0);
             indices.push_back(i2);
@@ -168,6 +171,45 @@ void ScreenQuad::drawQuad(GLuint shaderID) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+GLuint ShadowMap::setupShadowFB() {
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
+	glGenTextures(1, &shadowRT);
+	glBindTexture(GL_TEXTURE_2D, shadowRT);
 
-	// Vertex data for a render quad
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); //for da shadow
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowRT, 0);
+	//std::cout << "Render Texture" << i << " is: " << render_texture[i] << std::endl;
+	//setupRenderBuffer();
+	//std::cout << "WTF!!! FBO NOT COMPLETE!!!! OR NOT!!! " << ": " << glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return FBO;
+}
+
+void ShadowMap::activateshadowRT(GLuint shaderID) {
+	glUseProgram(shaderID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, shadowRT);
+	GLint shadowMAPRT = glGetUniformLocation(shaderID, "shadowRT");
+	glUniform1i(shadowMAPRT, 0);
+}
+
+void useFB(GLuint FB) {
+	glViewport(0, 0, 2048, 2048);
+	glBindFramebuffer(GL_FRAMEBUFFER, FB);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+void useSB(GLuint SB) {
+	glViewport(0, 0, 2048, 2048);
+	glBindFramebuffer(GL_FRAMEBUFFER, SB);
+	glClear(GL_DEPTH_BUFFER);
+}

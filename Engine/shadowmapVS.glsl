@@ -1,6 +1,7 @@
 #version 430 core
 
 uniform mat4 matModel;
+uniform mat4 matOrthoView;
 uniform mat4 matProjView;
 
 layout(location = 0) in vec3 pos;
@@ -12,6 +13,7 @@ out vec2 fTexCoord;
 out vec3 fNorm;
 
 void main(){
+	//gl_Position = matOrthoView * matModel * vec4(pos, 1.0);
 	gl_Position = matProjView * matModel * vec4(pos, 1.0);
 	//gl_Position = vec4(pos, 1.0);
 	fTexCoord = TexCoord;

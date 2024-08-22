@@ -19,16 +19,17 @@ void main(){
 
 	vec3 LightDir = normalize(vec3(fLightPos) - vec3(vPos));
 	float DiffPower = max(dot(normalize(fNorm), vec3(LightDir)), 0.0); 
+	DiffPower *= 2;
 
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
 	vec3 refLightDir = normalize(reflect(-LightDir, normalize(fNorm)));
 	float SpecPower = pow(max(dot(refLightDir, cameraDir), 0.0), 32);
 
+	float fAmbient = 1;
 
-	float fAmbient = 0.5;
-
-	outColor = vec3(texture(texture_diffuse1, fTexCoord) * (DiffPower + SpecPower) * fAmbient);
+	//outColor = vec3(texture(texture_diffuse1, fTexCoord) * (DiffPower + SpecPower) * fAmbient);
 	//outColor = vec3(DiffPower + SpecPower) * fAmbient;
+	outColor = vec3(texture(texture_diffuse1, fTexCoord));
 	outNorm = normalize(fNorm);
 	//outColor = vec3(1.0, 1.0, 1.0);
 	

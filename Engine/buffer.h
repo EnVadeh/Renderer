@@ -39,6 +39,16 @@ public:
 	void ActivateRenderTexture(GLuint shaderID);
 };
 
+
+class ShadowMap {
+private:
+	GLuint FBO;
+	GLuint shadowRT;
+public:
+	GLuint setupShadowFB();
+	void activateshadowRT(GLuint shaderID);
+};
+
 //I am too tired ot dealing with the normal buffer class, I don't wanna waste time with that and get confused
 class ScreenQuad {
 private: 
@@ -47,3 +57,7 @@ private:
 public: 
 	void drawQuad(GLuint shaderID);
 };
+
+void useFB(GLuint FB);
+
+void useSB(GLuint SB);

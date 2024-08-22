@@ -42,18 +42,25 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 //glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
-glm::vec3 vEye = {0, 10.0, 100.0};
+glm::vec4 lightPos = { 10, 100, 3, 1 };
+glm::vec3 vEye = {0, 20.0, 100.0};
 glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
 glm::mat4 matProjView = matProj * matView;
 
-glm::mat4 matOrtho = glm::ortho(-1, 1, -1, 1);
-
+glm::mat4 matOrtho = glm::ortho(-45.f, 45.f, -45.f, 45.0f, 0.1f, 10000.0f);
+glm::mat4 lightView = glm::lookAt(glm::vec3(lightPos), vCenter, vUp);
+glm::mat4 matOrthoView = matOrtho * lightView;
+glm::mat4 matProjViewSun = matProj * lightView;
 
 // I wanna make a realistic lighting 
 
 std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
+//std::string path = "E:/NEW_DOanload/dusty_old_bookshelf_free/scene.gltf";
+//std::string path = "E:/NEW_DOanload/hero_mountain/scene.gltf";
+//std::string path = "C:/Users/broia/Downloads/ordinary-house/house.obj";
+//std::string path = "C:/Users/broia/Downloads/85-cottage_obj.obj";
 //std::string path = "E:/NEW_DOanload/TransCube.obj";
 //std::string path = "E:/NEW_DOanload/simple-sphere/source/YourMesh.obj";
 //std::string path = "E:/NEW_DOanload/round-meal-low-poly-free/source/Roundmeal.obj";
@@ -66,20 +73,28 @@ void processInput(GLFWwindow* window)
 
 	// Light position controls
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		vEye.x += 10;
-		vCenter.x += 10;
+		vEye.x += 0.25;
+		vCenter.x += 0.25;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		vEye.x -= 10;
-		vCenter.x -= 10;
+		vEye.x -= 0.25;
+		vCenter.x -= 0.25;
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		vEye.y += 1;
-		vCenter.y += 1;
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		vEye.y += 0.25;
+		vCenter.y += 0.25;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		vEye.y -= 0.25;
+		vCenter.y -= 0.25;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		vEye.y -= 1;
-		vCenter.y -= 1;
+		vEye.z += 0.25;
+		vCenter.z += 0.25;
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		vEye.z -= 0.5;
+		vCenter.z -= 0.5;
 	}
 	//std::cout << "Camera Pos: " << vEye.x << " " << vEye.y << std::endl;
 }
@@ -111,24 +126,24 @@ int main() {
 	source = ReadShaderCode("terrainVS.glsl", "terrainFS.glsl");
 	GLuint terrainpass = CreateShader(source.VertexSource, source.FragmentSource);
 
-	glm::vec4 lightPos = {0, 100, -900, 1};
+
 	glUseProgram(firstpass);
 	
 	GLint vecCamPos = setUniform(firstpass, "fCamPos");
 	glUniform3fv(vecCamPos, 1, glm::value_ptr(vEye));
 	
 	GLint FBMatProjView = setUniform(shadowpass, "matProjView");
-	glUniformMatrix4fv(FBMatProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
+	glUniformMatrix4fv(FBMatProjView, 1, GL_FALSE, glm::value_ptr(matProjViewSun));
 	GLint terrainProjView = setUniform(terrainpass, "matProjView");
 	glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
 
 	GLint FBlightPos = setUniform(shadowpass, "fLightPos");
 	glUniform4fv(FBlightPos, 1, glm::value_ptr(lightPos));
 
-	//Model NewModel(&path[0]);
+	Model NewModel(&path[0]);
 	
-	glm::vec3 posi = { 0, 0, -1000 };
-	glm::vec3 sizi = { 100, 100, 100 };
+	glm::vec3 posi = { 0, 0, -10 };
+	glm::vec3 sizi = { 10, 10, 10 };
 
 	glm::vec3 posi2 = { +1800, 0, 0 };
 	glm::vec3 sizi2 = { 500, 500, 1000 };
@@ -138,19 +153,21 @@ int main() {
 	terrainTextures.push_back(TerrainTexName);
 	TerrainBuffer SimpleTerrain(200, 200, terrainTextures);
 
-	FrameBuffer ShadowMap;
-	GLuint ShadowTex = ShadowMap.setupFrameBuffer();
+	ShadowMap SM;
+	GLuint ShadowBuffer = SM.setupShadowFB();
+	FrameBuffer Entities;
+	GLuint EntitiesBuffer = Entities.setupFrameBuffer();
 	ScreenQuad SQ;
 	
 	glfwSwapInterval(60);
 
+	//put these things in a fucniton so i can just call the draw frame buffers and all these things type shit
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		GLenum err;
 		glEnable(GL_DEPTH_TEST);
 		glViewport(0, 0, 2048, 2048);
-		glBindFramebuffer(GL_FRAMEBUFFER, ShadowTex);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		useSB(ShadowBuffer);
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
 		matView = glm::lookAt(vEye, vCenter, vUp);
@@ -158,15 +175,21 @@ int main() {
 		GLint mPV = setUniform(firstpass, "matProjView");
 		glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matProjView));
 		matView = glm::lookAt(vEye, vCenter, vUp);
-		GLint FBmPV= setUniform(shadowpass, "matProjView");
-		glUniformMatrix4fv(FBmPV, 1, GL_FALSE, glm::value_ptr(matProjView));
-		SimpleTerrain.TerrainDraw(terrainpass);
-		//NewModel.Draw(posi, sizi, firstpass);
-		glDisable(GL_DEPTH_TEST);
+		GLint SBmOV= setUniform(shadowpass, "matOrthoView");
+		glUniformMatrix4fv(SBmOV, 1, GL_FALSE, glm::value_ptr(matOrthoView));
+		GLint TmPV= setUniform(terrainpass, "matProjView");
+		glUniformMatrix4fv(TmPV, 1, GL_FALSE, glm::value_ptr(matProjView));
+		SimpleTerrain.TerrainDraw(shadowpass);
+		NewModel.Draw(posi, sizi, shadowpass);
+		useFB(EntitiesBuffer);
+		SimpleTerrain.TerrainDraw(firstpass);
+		NewModel.Draw(posi, sizi, firstpass);
+		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 1000, 1000);
-		ShadowMap.ActivateRenderTexture(renderpass);
+		//Entities.ActivateRenderTexture(renderpass);
+		//SM.activateshadowRT(renderpass);
 		SQ.drawQuad(renderpass);
 		glfwSwapBuffers(window);
 		while ((err = glGetError()) != GL_NO_ERROR)

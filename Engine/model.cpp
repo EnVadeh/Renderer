@@ -48,7 +48,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vector.y = mesh->mVertices[i].y;
 		vector.z = mesh->mVertices[i].z;
 		vertex.Position = vector;
-		std::cout << "Vertex Positions are: " << vertex.Position[0] <<" " << vertex.Position[1] <<" " << vertex.Position[2] << std::endl;
+		//std::cout << "Vertex Positions are: " << vertex.Position[0] <<" " << vertex.Position[1] <<" " << vertex.Position[2] << std::endl;
 
 		if (mesh->HasNormals()) {
 			vector.x = mesh->mNormals[i].x;
@@ -120,8 +120,9 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 	for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
+		std::cout << "Texture name is: " << str.C_Str()<<std::endl;
 		bool skip = false;
-		std::cout << "Inside the if loop" << str.C_Str();
+		//std::cout << "Inside the if loop" << str.C_Str();
 		for (size_t j = 0; j < textures_loaded.size(); j++) {
 			std::cout << "The value of i : " << i << " and the loop should happen less than this times: " << textures_loaded.size();
 			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
@@ -131,7 +132,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 			}
 			std::cout << "Hello!";
 		}
-		std::cout << "First for loop is done!" << std::endl;
+		//std::cout << "First for loop is done!" << std::endl;
 		if (!skip)
 		{
 			Texture texture;

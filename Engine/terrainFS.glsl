@@ -14,11 +14,11 @@ void main(){
 
 
 	//outColor = vec4(fTexCoord.x, fTexCoord.y, 1.0, 1.0);
-	//outColor = vec3(texture(terrain0, fTexCoord));// * (DiffPower + SpecPower) * fAmbient;
+	outColor = vec3(texture(terrain0, fTexCoord));// * (DiffPower + SpecPower) * fAmbient;
 
 	//outColor = vec4(DiffPower);
+	//outNorm = vec3(0, 1, 0);
 	outNorm = fNorm;
-	//outColor = vec3(1, 1, 1);
 	//outColor = vec3(DiffPower);
 
 }

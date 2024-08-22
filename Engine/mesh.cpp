@@ -56,7 +56,7 @@ void Mesh::Draw(unsigned int shader) {
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		//std::cout << "Textures named: " << name + number << std::endl;
 	}
-	//std::cout << "The size of textures::"<<textures.size()<<std::endl;
+	std::cout << "The size of textures::"<<textures.size()<<std::endl;
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
