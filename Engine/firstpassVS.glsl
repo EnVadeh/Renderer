@@ -3,6 +3,7 @@
 uniform mat4 matModel;
 uniform mat4 matProjView;
 uniform mat4 sunMatProjView;
+uniform mat4 sunMatOrthoView;
 
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec2 TexCoord;
@@ -20,5 +21,5 @@ void main(){
 	fNorm = Normal;
 	vPos = matModel * vec4(pos, 1.0);
 	sPos = sunMatProjView * matModel * vec4(pos, 1.0);
-	//gl_Position = sunMatProjView * matModel * vec4(pos, 1.0);
+	//gl_Position = sunMatOrthoView * matModel * vec4(pos, 1.0);
 }

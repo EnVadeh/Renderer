@@ -214,10 +214,12 @@ GLuint ShadowMap::returnShadowRT() {
 void useFB(GLuint FB) {
 	glViewport(0, 0, 2048, 2048);
 	glBindFramebuffer(GL_FRAMEBUFFER, FB);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
 }
 void useSB(GLuint SB) {
 	glViewport(0, 0, 2048, 2048);
 	glBindFramebuffer(GL_FRAMEBUFFER, SB);//
 	glClear(GL_DEPTH_BUFFER_BIT);
+
 }

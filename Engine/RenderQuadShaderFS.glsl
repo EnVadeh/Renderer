@@ -1,7 +1,7 @@
 #version 430 core
 
 
-out vec4 FragColor;
+out vec4 fragColor;
   
 in vec2 fTex;
 
@@ -32,7 +32,7 @@ float sobelColor(vec2 uv)
     float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
     
     //if current edgeValue > edge threshold then it's edge so it returns 1 - 1(result of the boolean expression)
-    return 1.0 - float(edgeSqr > 0.07 * 0.07);
+    return 1.0 - float(edgeSqr > 0.02 * 0.02);
 }
 
 float sobelNormal(vec2 uv)
@@ -57,17 +57,17 @@ float sobelNormal(vec2 uv)
     float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
     
     
-    return 1.0 - float(edgeSqr > 0.07 * 0.07);
+    return 1.0 - float(edgeSqr > 0.02 * 0.02);
 }
 
 
 void main()
 {             
-    //float sbl = sobelNormal(fTex) * sobelColor(fTex);
-    //if (sbl == 1.0)
-	    //outColor = texture(colorRT, fTex);
-    //else 
-	    //outColor = vec4(0, 0, 0, 1);
+    float sbl = sobelNormal(fTex) * sobelColor(fTex);
+    if (sbl == 1.0)
+	    fragColor = texture(colorRT, fTex);
+    else 
+	    fragColor = vec4(0, 0, 0, 1);
     //FragColor = texture(colorRT, fTex);
-    FragColor = texture(shadowRT, fTex);
+    //FragColor = texture(shadowRT, fTex);
 } 
