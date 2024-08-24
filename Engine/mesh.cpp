@@ -30,10 +30,11 @@ void Mesh::SetupMesh() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 
 	glBindVertexArray(0);
-	std::cout << "The buffers are set up!" << std::endl;
+	//std::cout << "The buffers are set up!" << std::endl;
 }
 
-void Mesh::Draw(unsigned int shader) {
+void Mesh::Draw(unsigned int shader, GLuint shadowID) {
+	glUseProgram(shader);
 	//Different maps
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
@@ -54,10 +55,29 @@ void Mesh::Draw(unsigned int shader) {
 			number = std::to_string(heightNr++);
 		glUniform1i(glGetUniformLocation(shader, (name + number).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		//std::cout<<"Activated texture: "<<i<<std::endl;
 		//std::cout << "Textures named: " << name + number << std::endl;
 	}
-	std::cout << "The size of textures::"<<textures.size()<<std::endl;
+
+	if (shadowID != 0) {
+		glActiveTexture(GL_TEXTURE0 + textures.size());
+		glBindTexture(GL_TEXTURE_2D, shadowID);
+		glUniform1i(glGetUniformLocation(shader, "shadowRT"), textures.size());
+
+		//std::cout << "shadowRT for Mesh: "<<textures.size() << std::endl;
+	}
+
+	//std::cout << "The size of textures::"<<textures.size()<<std::endl;
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	//for (size_t i = 0; i < textures.size(); i++) {
+	//	glActiveTexture(GL_TEXTURE0 + i);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+	//}
+	//
+	//if (shadowID != 0) {
+	//	glActiveTexture(GL_TEXTURE0 + textures.size());
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+	//}
 	glBindVertexArray(0);
 }

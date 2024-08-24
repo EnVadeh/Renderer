@@ -17,11 +17,11 @@ private:
 	std::vector<vertex> vertices;
 	std::vector<GLuint> indices;
 	size_t terrainW, terrainH;
-	std::string name = "terrain";
+	std::string name = "texture_diffuse";
 	texture terrain;
 public:
 	TerrainBuffer(size_t width, size_t height, std::vector<std::string> texName);
-	void TerrainDraw(GLuint shaderID);
+	void TerrainDraw(GLuint shaderID, GLuint shadowID);
 	
 };
 
@@ -47,6 +47,7 @@ private:
 public:
 	GLuint setupShadowFB();
 	void activateshadowRT(GLuint shaderID);
+	GLuint returnShadowRT();
 };
 
 //I am too tired ot dealing with the normal buffer class, I don't wanna waste time with that and get confused

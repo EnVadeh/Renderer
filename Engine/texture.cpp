@@ -1,6 +1,7 @@
 #include "texture.h"
 #include "iostream"
 
+
 texture::texture(int num, std::string name) {
 	texName = name;
 	number = num;
@@ -38,15 +39,15 @@ void texture::load_textures_manual(std::vector<std::string> texture_names) {
 }
 
 void texture::tex_to_shader(GLuint shader_id) {
+	size_t texNum = 1;
 	for (size_t i = 0; i < number; i++) {
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, texture_id[i]);
-		std::string uniformName = texName + std::to_string(i);
+		std::string uniformName = texName + std::to_string(texNum++);
 		GLint shaderLoc = glGetUniformLocation(shader_id, uniformName.c_str());
 		glUniform1i(shaderLoc, i);
+		std::cout << "textures are named: " << uniformName<<""<<i << std::endl;
 	}
-	//glBindTexture(GL_TEXTURE_2D, texture_id[0]); //I think this assumes that glactivei(the lastone)
-	//is being boudn to this texture!
 }
 
 void texture::bind() {

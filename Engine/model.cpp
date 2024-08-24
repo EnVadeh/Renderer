@@ -1,11 +1,11 @@
 #include "model.h"
 
-void Model::Draw(glm::vec3 Pos, glm::vec3 Size, GLuint shaderID) {
+void Model::Draw(glm::vec3 Pos, glm::vec3 Size, GLuint shaderID, GLuint ShadowID) {
 	glm::mat4 mtw = createGeometricToWorldMatrix(Pos, glm::vec3(0, 0, 0), Size);
 	GLint mMpos = setUniform(shaderID, "matModel");
 	glUniformMatrix4fv(mMpos, 1, GL_FALSE, glm::value_ptr(mtw));
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shaderID);
+		meshes[i].Draw(shaderID, ShadowID);
 }
 
 void Model::loadModel(std::string path) {
@@ -28,7 +28,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 		//processing all the node's meshes
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		std::cout << "Here's what ProcessNode numer: " << i << std::endl;
+		//std::cout << "Here's what ProcessNode numer: " << i << std::endl;
 		meshes.push_back(processMesh(mesh, scene));
 	}
 	//process the children
@@ -114,23 +114,22 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	Assimp::Importer importer;
 	std::vector<Texture> textures;
-	std::cout << "This is for " << typeName << std::endl;
+	//std::cout << "This is for " << typeName << std::endl;
 
 	stbi_set_flip_vertically_on_load(true);
 	for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
-		std::cout << "Texture name is: " << str.C_Str()<<std::endl;
+		//std::cout << "Texture name is: " << str.C_Str()<<std::endl;
 		bool skip = false;
 		//std::cout << "Inside the if loop" << str.C_Str();
 		for (size_t j = 0; j < textures_loaded.size(); j++) {
-			std::cout << "The value of i : " << i << " and the loop should happen less than this times: " << textures_loaded.size();
+			//std::cout << "The value of i : " << i << " and the loop should happen less than this times: " << textures_loaded.size();
 			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
 				textures.push_back(textures_loaded[j]);
 				skip = true;
 				break;
 			}
-			std::cout << "Hello!";
 		}
 		//std::cout << "First for loop is done!" << std::endl;
 		if (!skip)

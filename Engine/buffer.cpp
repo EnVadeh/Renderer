@@ -3,7 +3,7 @@
 //also add parametrs so that if it's the same size for all triangles, only once does it need to copy
 
 
-
+//change the name of the terrain texture so it can work with the other shaders too!
 TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::string> texName) : terrain(1, name) {
 	terrainW = width;
 	terrainH = height;
@@ -45,8 +45,6 @@ TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::strin
 
 		}
 	}
-
-
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(BufferAttribs::NumBuffers, Buffers);
 	glBindVertexArray(VAO);
@@ -67,17 +65,23 @@ TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::strin
 	terrain.load_textures_manual(texName);
 }
 
-void TerrainBuffer::TerrainDraw(GLuint shaderID) {
+void TerrainBuffer::TerrainDraw(GLuint shaderID, GLuint shadowID) {
+	glUseProgram(shaderID);
 	terrain.tex_to_shader(shaderID);
+	if (shadowID != 0) {
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, shadowID);
+		glUniform1i(glGetUniformLocation(shaderID, "shadowRT"), 1);
+	}
 	glm::vec3 Pos = {0, 0, -1};
 	glm::vec3 Size = {1, 1, 1};
 	glm::mat4 terrainMTW = createGeometricToWorldMatrix(Pos, glm::vec3(0, 0, 0), Size);
 
 	GLint terrainMTWpos = setUniform(shaderID, "matModel");
 	glUniformMatrix4fv(terrainMTWpos, 1, GL_FALSE, glm::value_ptr(terrainMTW));
-	glUseProgram(shaderID);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glActiveTexture(GL_TEXTURE0);
 }
 
 // basicallyy frame buffers need either a Render Buffer to render to or Textures, Textures for multisamppling and render buffers for multiple queues I think or fo rlike 
@@ -203,6 +207,10 @@ void ShadowMap::activateshadowRT(GLuint shaderID) {
 	glUniform1i(shadowMAPRT, 0);
 }
 
+GLuint ShadowMap::returnShadowRT() {
+	return shadowRT;
+}
+
 void useFB(GLuint FB) {
 	glViewport(0, 0, 2048, 2048);
 	glBindFramebuffer(GL_FRAMEBUFFER, FB);
@@ -210,6 +218,6 @@ void useFB(GLuint FB) {
 }
 void useSB(GLuint SB) {
 	glViewport(0, 0, 2048, 2048);
-	glBindFramebuffer(GL_FRAMEBUFFER, SB);
-	glClear(GL_DEPTH_BUFFER);
+	glBindFramebuffer(GL_FRAMEBUFFER, SB);//
+	glClear(GL_DEPTH_BUFFER_BIT);
 }

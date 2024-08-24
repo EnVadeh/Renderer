@@ -42,17 +42,18 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 //glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
-glm::vec4 lightPos = { 10, 100, 3, 1 };
+glm::vec4 lightPos = { 0, 50, -55, 1 };
 glm::vec3 vEye = {0, 20.0, 100.0};
 glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
 glm::mat4 matProjView = matProj * matView;
+glm::vec3 vLightCenter = glm::vec3(0, 0, 0);
+glm::mat4 matSunView = glm::lookAt(glm::vec3(lightPos), vLightCenter, vUp);
 
 glm::mat4 matOrtho = glm::ortho(-45.f, 45.f, -45.f, 45.0f, 0.1f, 10000.0f);
-glm::mat4 lightView = glm::lookAt(glm::vec3(lightPos), vCenter, vUp);
-glm::mat4 matOrthoView = matOrtho * lightView;
-glm::mat4 matProjViewSun = matProj * lightView;
+glm::mat4 matOrthoView = matOrtho * matSunView;
+glm::mat4 matProjViewSun = matProj * matSunView;
 
 // I wanna make a realistic lighting 
 
@@ -131,19 +132,19 @@ int main() {
 	
 	GLint vecCamPos = setUniform(firstpass, "fCamPos");
 	glUniform3fv(vecCamPos, 1, glm::value_ptr(vEye));
-	
 	GLint FBMatProjView = setUniform(shadowpass, "matProjView");
 	glUniformMatrix4fv(FBMatProjView, 1, GL_FALSE, glm::value_ptr(matProjViewSun));
+	GLint RPSunProjView = setUniform(firstpass, "sunMatProjView");
+	glUniformMatrix4fv(RPSunProjView, 1, GL_FALSE, glm::value_ptr(matProjViewSun));
 	GLint terrainProjView = setUniform(terrainpass, "matProjView");
 	glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
-
 	GLint FBlightPos = setUniform(shadowpass, "fLightPos");
 	glUniform4fv(FBlightPos, 1, glm::value_ptr(lightPos));
 
 	Model NewModel(&path[0]);
 	
-	glm::vec3 posi = { 0, 0, -10 };
-	glm::vec3 sizi = { 10, 10, 10 };
+	glm::vec3 posi = { 1, 5, -10 };
+	glm::vec3 sizi = { 7, 7, 7 };
 
 	glm::vec3 posi2 = { +1800, 0, 0 };
 	glm::vec3 sizi2 = { 500, 500, 1000 };
@@ -162,11 +163,10 @@ int main() {
 	glfwSwapInterval(60);
 
 	//put these things in a fucniton so i can just call the draw frame buffers and all these things type shit
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		GLenum err;
-		glEnable(GL_DEPTH_TEST);
-		glViewport(0, 0, 2048, 2048);
 		useSB(ShadowBuffer);
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
@@ -179,22 +179,24 @@ int main() {
 		glUniformMatrix4fv(SBmOV, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 		GLint TmPV= setUniform(terrainpass, "matProjView");
 		glUniformMatrix4fv(TmPV, 1, GL_FALSE, glm::value_ptr(matProjView));
-		SimpleTerrain.TerrainDraw(shadowpass);
-		NewModel.Draw(posi, sizi, shadowpass);
+		NewModel.Draw(posi, sizi, shadowpass, 0);
+		SimpleTerrain.TerrainDraw(shadowpass, 0);
 		useFB(EntitiesBuffer);
-		SimpleTerrain.TerrainDraw(firstpass);
-		NewModel.Draw(posi, sizi, firstpass);
+		SimpleTerrain.TerrainDraw(firstpass, SM.returnShadowRT());
+		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 1000, 1000);
-		//Entities.ActivateRenderTexture(renderpass);
-		//SM.activateshadowRT(renderpass);
+		Entities.ActivateRenderTexture(renderpass);
+		//SM.activateshadowRT(renderpass); 
 		SQ.drawQuad(renderpass);
+		std::cout << "Drawn!" << std::endl;
 		glfwSwapBuffers(window);
 		while ((err = glGetError()) != GL_NO_ERROR)
 				printf("OpenGL error: %d\n", err);
 		glfwPollEvents();
+		//glActiveTexture(GL_TEXTURE0);
 	}
 	glfwTerminate();
 	return 0;
