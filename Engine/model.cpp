@@ -11,7 +11,7 @@ void Model::Draw(glm::vec3 Pos, glm::vec3 Size, GLuint shaderID, GLuint ShadowID
 void Model::loadModel(std::string path) {
 	
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -64,16 +64,18 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 			vec.y = mesh->mTextureCoords[0][i].y;
 			vertex.TexCoords = vec;
 
+			
 			//tangent
-			/*vector.x = mesh->mTangents[i].x;
+			vector.x = mesh->mTangents[i].x;
 			vector.y = mesh->mTangents[i].y;
 			vector.z = mesh->mTangents[i].z;
 			vertex.Tangent = vector;
-
+			
 			vector.x = mesh->mBitangents[i].x;
 			vector.y = mesh->mBitangents[i].y;
 			vector.z = mesh->mBitangents[i].z;
-			vertex.Bitangent = vector;*/
+			vertex.Bitangent = vector;
+			
 		}
 		else
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
@@ -116,7 +118,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 	std::vector<Texture> textures;
 	//std::cout << "This is for " << typeName << std::endl;
 
-	stbi_set_flip_vertically_on_load(true);
+	
 	for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);

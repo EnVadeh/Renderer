@@ -3,7 +3,7 @@
 uniform mat4 matModel;
 uniform mat4 matProjView;
 uniform mat4 sunMatProjView;
-uniform mat4 sunMatOrthoView;
+uniform mat4 matSunOrthoView;
 
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec2 TexCoord;
@@ -20,6 +20,7 @@ void main(){
 	fTexCoord = TexCoord;
 	fNorm = Normal;
 	vPos = matModel * vec4(pos, 1.0);
-	sPos = sunMatProjView * matModel * vec4(pos, 1.0);
-	//gl_Position = sunMatProjView * matModel * vec4(pos, 1.0);
+	sPos = matSunOrthoView * matModel * vec4(pos, 1.0); //for orthogonal shadow
+	//sPos = sunMatProjView * matModel * vec4(pos, 1.0); //for projection shadow
+	//gl_Position = matSunOrthoView * matModel * vec4(pos, 1.0);
 }

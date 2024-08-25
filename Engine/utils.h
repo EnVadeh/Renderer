@@ -12,7 +12,7 @@ glm::mat4 createGeometricToWorldMatrix(glm::vec3 position, glm::vec3 rotation, g
 struct BufferAttribs {
 	//enum VAO_IDs { Triangles, NumVAOs };
 	enum Buffer_IDs { ArrayBuffer, ElementBuffer, NumBuffers };
-	enum Attrib_IDs { vPos, vTex, vNormal };
+	enum Attrib_IDs { vPos, vTex, vNormal, vTangent, vBiTangent };
 	//GLuint VAOs[NumVAOs];
 	GLuint Buffers[NumBuffers];
 };

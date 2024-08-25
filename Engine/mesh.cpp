@@ -20,14 +20,20 @@ void Mesh::SetupMesh() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffers[BufferAttribs::ElementBuffer]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glEnableVertexAttribArray(BufferAttribs::vPos);
+	glVertexAttribPointer(BufferAttribs::vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+	glEnableVertexAttribArray(BufferAttribs::vTex);
+	glVertexAttribPointer(BufferAttribs::vTex, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	glEnableVertexAttribArray(BufferAttribs::vNormal);
+	glVertexAttribPointer(BufferAttribs::vNormal, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	
+	glEnableVertexAttribArray(BufferAttribs::vTangent);
+	glVertexAttribPointer(BufferAttribs::vTangent, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+
+	glEnableVertexAttribArray(BufferAttribs::vBiTangent);
+	glVertexAttribPointer(BufferAttribs::vBiTangent, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
 	glBindVertexArray(0);
 	//std::cout << "The buffers are set up!" << std::endl;

@@ -51,7 +51,7 @@ glm::mat4 matProjView = matProj * matView;
 glm::vec3 vLightCenter = glm::vec3(0, 0, 0);
 glm::mat4 matSunView = glm::lookAt(glm::vec3(lightPos), vLightCenter, vUp);
 
-glm::mat4 matOrtho = glm::ortho(-500.f, 500.f, -500.f, 500.0f, 0.1f, 10000.0f);
+glm::mat4 matOrtho = glm::ortho(-50.f, 50.f, -50.f, 50.0f, 0.1f, 10000.0f);
 glm::mat4 matOrthoView = matOrtho * matSunView;
 glm::mat4 matProjViewSun = matProj * matSunView;
 
@@ -142,6 +142,8 @@ int main() {
 	glUniformMatrix4fv(FPSunOrthoView, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 	GLint terrainProjView = setUniform(terrainpass, "matProjView");
 	glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
+	GLint terrainOrthoView = setUniform(terrainpass, "matSunOrthoView");
+	glUniformMatrix4fv(terrainOrthoView, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 	GLint FBlightPos = setUniform(shadowpass, "fLightPos");
 	glUniform4fv(FBlightPos, 1, glm::value_ptr(lightPos));
 	GLint TPLightPos = setUniform(terrainpass, "fLightPos");
@@ -188,13 +190,13 @@ int main() {
 		glUniformMatrix4fv(SBmOV, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 		GLint TmPV= setUniform(terrainpass, "matProjView");
 		glUniformMatrix4fv(TmPV, 1, GL_FALSE, glm::value_ptr(matProjView));
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 		SimpleTerrain.TerrainDraw(shadowpass, 0);
 		NewModel.Draw(posi, sizi, shadowpass, 0);
 		useFB(EntitiesBuffer);
 		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
 		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

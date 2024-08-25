@@ -13,8 +13,8 @@ out vec2 fTexCoord;
 out vec3 fNorm;
 
 void main(){
-	//gl_Position = matOrthoView * matModel * vec4(pos, 1.0);
-	gl_Position = matProjView * matModel * vec4(pos, 1.0);
+	gl_Position = matOrthoView * matModel * vec4(pos, 1.0); //directional light
+	//gl_Position = matProjView * matModel * vec4(pos, 1.0); //Spot light
 	//gl_Position = vec4(pos, 1.0);
 	fTexCoord = TexCoord;
 	fNorm = Normal;

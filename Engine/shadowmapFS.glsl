@@ -14,9 +14,10 @@ void main(){
 	
 	//outColor = vec4(fTexCoord.x, fTexCoord.y, 1.0, 1.0);
 	//outColor = texture(texture_diffuse1, fTexCoord) * (DiffPower + SpecPower) * fAmbient;
-	//outColor = vec4(DiffPower);
+	
 	//outNorm = normalize(fNorm);
 	//outColor = vec3(texture(texture_diffuse1, fTexCoord));
+	//outColor = vec3(fTexCoord, 1.0);
 	//outColor = vec3(DiffPower);
 
 }
