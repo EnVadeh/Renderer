@@ -13,9 +13,12 @@ struct BufferAttribs {
 	//enum VAO_IDs { Triangles, NumVAOs };
 	enum Buffer_IDs { ArrayBuffer, ElementBuffer, NumBuffers };
 	enum Attrib_IDs { vPos, vTex, vNormal, vTangent, vBiTangent };
+	enum SSBuffers { vAlbedo, NumSSBs};
 	//GLuint VAOs[NumVAOs];
 	GLuint Buffers[NumBuffers];
 };
+
+
 
 static const std::string RenderTextureNames[3] = {
     "colorRT",

@@ -39,6 +39,18 @@ public:
 	void ActivateRenderTexture(GLuint shaderID);
 };
 
+class SSBufferObject {
+private:
+	GLuint SSBO[BufferAttribs::NumSSBs];
+	GLuint SSBO_sizes[BufferAttribs::NumSSBs] = { 16384 };
+	
+public:
+	SSBufferObject();
+	void BindSSBOs();
+	void UnbindSSBOs();
+	GLuint SSBOid(size_t index); //use this to manually give data to some SSBO from the applicaton
+};
+
 
 class ShadowMap {
 private:
@@ -60,5 +72,4 @@ public:
 };
 
 void useFB(GLuint FB);
-
 void useSB(GLuint SB);

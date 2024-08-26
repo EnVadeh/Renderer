@@ -127,6 +127,10 @@ int main() {
 	source = ReadShaderCode("terrainVS.glsl", "terrainFS.glsl");
 	GLuint terrainpass = CreateShader(source.VertexSource, source.FragmentSource);
 
+	
+	SSBufferObject BufferObj;
+	BufferObj.BindSSBOs();
+	GLuint SSBOfirst = BufferObj.SSBOid(0);
 
 	glUseProgram(firstpass);
 	

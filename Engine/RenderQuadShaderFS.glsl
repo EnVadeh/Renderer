@@ -32,7 +32,7 @@ float sobelColor(vec2 uv)
     float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
     
     //if current edgeValue > edge threshold then it's edge so it returns 1 - 1(result of the boolean expression)
-    return 1.0 - float(edgeSqr > 0.02 * 0.02);
+    return 1.0 - float(edgeSqr > 0.07 * 0.07);
 }
 
 float sobelNormal(vec2 uv)
@@ -57,7 +57,7 @@ float sobelNormal(vec2 uv)
     float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
     
     
-    return 1.0 - float(edgeSqr > 0.02 * 0.02);
+    return 1.0 - float(edgeSqr > 0.5 * 0.5);
 }
 
 
@@ -67,7 +67,7 @@ void main()
     if (sbl == 1.0)
 	    fragColor = texture(colorRT, fTex);
     else 
-	    fragColor = vec4(0, 0, 0, 1);
+	    fragColor = vec4(vec3(sbl, sbl, 0), 1.0);
     //FragColor = texture(colorRT, fTex);
     //FragColor = texture(shadowRT, fTex);
 } 

@@ -149,6 +149,31 @@ void FrameBuffer::readFromBuffer() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
 }
 
+SSBufferObject::SSBufferObject() {
+	glGenBuffers(BufferAttribs::NumSSBs, SSBO);
+	for (size_t i = 0; i < BufferAttribs::NumSSBs; i++) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO[i]);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, SSBO_sizes[i], NULL, GL_DYNAMIC_COPY);
+	}
+}
+
+void SSBufferObject::BindSSBOs() {
+	for (size_t i = 0; i < BufferAttribs::NumSSBs; i++) {
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, i, SSBO[i]);
+	}
+}
+
+void SSBufferObject::UnbindSSBOs() {
+	for (size_t i = 0; i < BufferAttribs::NumSSBs; i++) {
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, i, 0);
+	}
+}
+
+GLuint SSBufferObject::SSBOid(size_t index) {
+	return SSBO[index];
+}
+
+
 void ScreenQuad::drawQuad(GLuint shaderID) {
 	glUseProgram(shaderID);
 	float quadVertices[] = {
@@ -221,5 +246,6 @@ void useSB(GLuint SB) {
 	glViewport(0, 0, 2048, 2048);
 	glBindFramebuffer(GL_FRAMEBUFFER, SB);//
 	glClear(GL_DEPTH_BUFFER_BIT);
-
 }
+
+

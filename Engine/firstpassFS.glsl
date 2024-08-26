@@ -10,6 +10,7 @@ uniform sampler2D texture_normal1;
 
 in vec2 fTexCoord;
 in vec4 vPos;
+in vec3 vNorm;
 in vec4 sPos;
 in mat3 TBN;
 
@@ -47,12 +48,13 @@ void main(){
 
 	//outColor = vec3(shadow);
 	outColor = lighting * vec3(texture(texture_diffuse1, fTexCoord));
+	//outColor = vec3(fTexCoord, 1.0) * (1-shadow);
 	//outColor = fNorm;
 	//outColor = vec3(DiffPower);
 	//outColor = vec3(fAmbient * (1.0 -shadow));
 	
 	//outColor = vec3(texture(texture_diffuse1, fTexCoord));
-	outNorm = normalize(fNorm);
+	outNorm = vNorm;
 	//outColor = vec3(1.0, 1.0, 1.0);
 	
 }
