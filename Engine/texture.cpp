@@ -35,7 +35,6 @@ void texture::load_textures_manual(std::vector<std::string> texture_names) {
 			stbi_image_free(data);
 		}
 	}
-	
 }
 
 void texture::tex_to_shader(GLuint shader_id) {
@@ -46,7 +45,7 @@ void texture::tex_to_shader(GLuint shader_id) {
 		std::string uniformName = texName + std::to_string(texNum++);
 		GLint shaderLoc = glGetUniformLocation(shader_id, uniformName.c_str());
 		glUniform1i(shaderLoc, i);
-		std::cout << "textures are named: " << uniformName<<""<<i << std::endl;
+		//std::cout << "textures are named: " << uniformName<<""<<i << std::endl;
 	}
 }
 

@@ -48,6 +48,9 @@
     <ClCompile Include="utils.cpp">
       <Filter>loader</Filter>
     </ClCompile>
+    <ClCompile Include="SSBOLoader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SSBOLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

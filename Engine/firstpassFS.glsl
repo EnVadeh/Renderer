@@ -14,6 +14,18 @@ in vec3 vNorm;
 in vec4 sPos;
 in mat3 TBN;
 
+struct Materials{
+	vec4 Albedo;
+	float Mettalic;
+	float Roughness;
+	float padding;
+	float paddin2;
+};
+
+layout(std430, binding = 0) buffer SSBO {   
+	Materials Mat[];
+} SS;
+
 layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec3 outNorm;
 
@@ -32,8 +44,12 @@ void main(){
 	fNorm = fNorm * 2.0 - 1.0;
 	fNorm = normalize(fNorm * TBN);
 	//fNorm = -fNorm; 
+	ivec2 fragCoord = ivec2(gl_FragCoord.xy);
+	int index = fragCoord.x/1000;
+	float Met = SS.Mat[index].Mettalic;
+	
 	vec3 lightDir = normalize(vec3(fLightPos) - vec3(vPos));
-	float DiffPower = max(dot(fNorm, vec3(lightDir)), 0.0); 
+	float DiffPower = max(dot(fNorm, vec3(lightDir)), 0.0) * Met;
 	float bias = max(0.05 * (1.0 - dot(fNorm, lightDir)), 0.005);  
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
 	vec3 refLightDir = normalize(reflect(-lightDir, fNorm));
@@ -43,18 +59,7 @@ void main(){
 
 	float shadow = shadowCalculation(sPos, bias);
 	vec3 lighting = vec3(fAmbient) + (1.0 - shadow) * (vec3(DiffPower) + vec3(SpecPower));    
-	//outColor = vec3(texture(texture_diffuse1, fTexCoord));
-	//outColor = vec3(DiffPower + SpecPower) * fAmbient;
-
-	//outColor = vec3(shadow);
 	outColor = lighting * vec3(texture(texture_diffuse1, fTexCoord));
-	//outColor = vec3(fTexCoord, 1.0) * (1-shadow);
-	//outColor = fNorm;
-	//outColor = vec3(DiffPower);
-	//outColor = vec3(fAmbient * (1.0 -shadow));
-	
-	//outColor = vec3(texture(texture_diffuse1, fTexCoord));
+	//outColor = vec3(index) * lighting;	
 	outNorm = vNorm;
-	//outColor = vec3(1.0, 1.0, 1.0);
-	
 }

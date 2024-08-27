@@ -1,8 +1,6 @@
 #include "buffer.h"
 
 //also add parametrs so that if it's the same size for all triangles, only once does it need to copy
-
-
 //change the name of the terrain texture so it can work with the other shaders too!
 TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::string> texName) : terrain(1, name) {
 	terrainW = width;
@@ -149,11 +147,15 @@ void FrameBuffer::readFromBuffer() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
 }
 
-SSBufferObject::SSBufferObject() {
+//std140 means each struct member get's its own space, so no packing
+//std430 u can pack stuff but it's kinda tricky
+SSBufferObject::SSBufferObject(std::vector<Materials> Temp) {
+	this->Data.resize(Temp.size());
+	this->Data = Temp;
 	glGenBuffers(BufferAttribs::NumSSBs, SSBO);
 	for (size_t i = 0; i < BufferAttribs::NumSSBs; i++) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO[i]);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, SSBO_sizes[i], NULL, GL_DYNAMIC_COPY);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Data), &Data, GL_DYNAMIC_COPY);
 	}
 }
 
@@ -184,7 +186,7 @@ void ScreenQuad::drawQuad(GLuint shaderID) {
 
 		-1.0f,  1.0f,  0.0f, 1.0f,
 		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
+		 1.0f,  1.0f,  1.0f, 1.0f	
 	};
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);;

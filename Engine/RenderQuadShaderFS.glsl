@@ -1,16 +1,23 @@
 #version 430 core
 
-
-out vec4 fragColor;
   
 in vec2 fTex;
 
+struct Materials{
+	vec4 Albedo;
+	float Mettalic;
+	float Roughness;
+};
+
+layout(std430, binding = 0) buffer SSBO {   
+	Materials Mat[];
+} SS;
 
 uniform sampler2D colorRT;
 uniform sampler2D normalRT;
 uniform sampler2D shadowRT;
 
-
+out vec4 fragColor;
 
 float sobelColor(vec2 uv)
 {
@@ -68,6 +75,7 @@ void main()
 	    fragColor = texture(colorRT, fTex);
     else 
 	    fragColor = vec4(vec3(sbl, sbl, 0), 1.0);
+
     //FragColor = texture(colorRT, fTex);
     //FragColor = texture(shadowRT, fTex);
 } 

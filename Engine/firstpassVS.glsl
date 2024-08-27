@@ -11,9 +11,7 @@ layout(location = 2) in vec3 Normal;
 layout(location = 3) in vec3 tangent;
 layout(location = 4) in vec3 biTangent;
 
-layout(std430, binding = 0) buffer AlbedoBuffer {   
-	vec3 data[];
-} Albedos;
+
 
 
 out vec4 vPos; 

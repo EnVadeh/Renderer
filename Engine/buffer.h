@@ -42,10 +42,11 @@ public:
 class SSBufferObject {
 private:
 	GLuint SSBO[BufferAttribs::NumSSBs];
-	GLuint SSBO_sizes[BufferAttribs::NumSSBs] = { 16384 };
+	GLuint SSBO_sizes[BufferAttribs::NumSSBs] = { BufferAttribs::vec3SSBO };
+	std::vector<Materials> Data;
 	
 public:
-	SSBufferObject();
+	SSBufferObject(std::vector<Materials> Temp);
 	void BindSSBOs();
 	void UnbindSSBOs();
 	GLuint SSBOid(size_t index); //use this to manually give data to some SSBO from the applicaton

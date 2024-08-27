@@ -12,6 +12,8 @@
 #include "texture.h"
 #include "buffer.h"
 #include "utils.h"
+#include "SSBOLoader.h"
+
 
 enum VAO_IDS { Particle, Light, Moveable, Textured_Particle, Triangle_Object, NumVAOs }; // numvaos has the value of how many elements are there in the enum. Can add other shit like {Triangles, Polygons, Circles, NumVAOs}, the enum value will be 3, starting form 0 of the left. This way we don't need to constantly update the value of How many number of vertices we need
 enum Buffer_IDs { ArrayBuffer, ElementBuffer, TextureBuffer, NumBuffers };
@@ -43,7 +45,7 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
 glm::vec4 lightPos = { 0, 50, -55, 1 };
-glm::vec3 vEye = {90, 30.0, -50.0};
+glm::vec3 vEye = {0, 30.0, -50.0};
 glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
@@ -126,14 +128,49 @@ int main() {
 	GLuint renderpass = CreateShader(source.VertexSource, source.FragmentSource);
 	source = ReadShaderCode("terrainVS.glsl", "terrainFS.glsl");
 	GLuint terrainpass = CreateShader(source.VertexSource, source.FragmentSource);
-
 	
-	SSBufferObject BufferObj;
-	BufferObj.BindSSBOs();
-	GLuint SSBOfirst = BufferObj.SSBOid(0);
+	//std::vector<Materials> SSBOMat;
+	//Materials Mat1;
+	//Mat1.Albedo = glm::vec4{ 1, 1, 1, 1 };
+	//Mat1.Mettalic = 1.0;
+	//Mat1.Roughness = 1.0;
+	//SSBOMat.push_back(Mat1);
+	//Materials Mat2;
+	//Mat2.Albedo = glm::vec4{ 1, 1, 1, 1 };
+	//Mat2.Mettalic = 0.5;
+	//Mat2.Roughness = 0.5;
+	//SSBOMat.push_back(Mat2);
+	//Materials Mat3;
+	//Mat3.Albedo = glm::vec4{ 1, 1, 1, 1 };
+	//Mat3.Mettalic = 0.7;
+	//Mat3.Roughness = 0.6;
+	//SSBOMat.push_back(Mat3);
 
-	glUseProgram(firstpass);
-	
+//	SSBufferObject BufferObj(SSBOMat);
+//	BufferObj.BindSSBOs();
+
+
+	std::vector<Materials> SSBOMat;
+
+	// Initialize your materials
+	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 1.0f, 1.0f };
+	Materials Mat2{ glm::vec4{1, 1, 1, 1}, 0.0f, 0.5f };
+	Materials Mat3{ glm::vec4{1, 1, 1, 1}, 0.7f, 0.6f };
+
+	SSBOMat.push_back(Mat1);
+	SSBOMat.push_back(Mat2);
+	SSBOMat.push_back(Mat3);
+
+	// OpenGL buffer setup
+	GLuint SSBOO;
+	glGenBuffers(1, &SSBOO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBOO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Materials) * SSBOMat.size(), SSBOMat.data(), GL_DYNAMIC_COPY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBOO);
+
+
+
+	glUseProgram(firstpass);	
 	GLint vecCamPos = setUniform(firstpass, "fCamPos");
 	glUniform3fv(vecCamPos, 1, glm::value_ptr(vEye));
 	GLint FBMatProjView = setUniform(shadowpass, "matProjView");
@@ -180,6 +217,7 @@ int main() {
 
 	glDepthMask(GL_TRUE);
 	while (!glfwWindowShouldClose(window)) {
+
 		processInput(window);
 		GLenum err;
 		useSB(ShadowBuffer);
@@ -207,10 +245,11 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, 1000, 1000);
 		glDisable(GL_CULL_FACE);
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		Entities.ActivateRenderTexture(renderpass);
 		//SM.activateshadowRT(renderpass); 
 		SQ.drawQuad(renderpass);
-		std::cout << "Drawn!" << std::endl;
+		//std::cout << "Drawn!" << std::endl;
 		glfwSwapBuffers(window);
 		while ((err = glGetError()) != GL_NO_ERROR)
 				printf("OpenGL error: %d\n", err);
