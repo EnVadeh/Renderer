@@ -1,21 +1,18 @@
 #version 430 core
-
   
 in vec2 fTex;
+in mat4 mProj;
 
-struct Materials{
-	vec4 Albedo;
-	float Mettalic;
-	float Roughness;
-};
+layout(std430, binding = 1) buffer ssaoKernelBuffer {   
+	vec4 samples[];
+} ssaoK;
 
-layout(std430, binding = 0) buffer SSBO {   
-	Materials Mat[];
-} SS;
+const vec2 noiseScale = vec2(1000.0/4.0, 1000.0/4.0);
 
 uniform sampler2D colorRT;
 uniform sampler2D normalRT;
-uniform sampler2D shadowRT;
+uniform sampler2D depthRT;
+uniform sampler2D noiseT;
 
 out vec4 fragColor;
 
@@ -64,7 +61,7 @@ float sobelNormal(vec2 uv)
     float edgeSqr = (sobelX * sobelX + sobelY * sobelY);
     
     
-    return 1.0 - float(edgeSqr > 0.5 * 0.5);
+    return 1.0 - float(edgeSqr > 0.75 * 0.75);
 }
 
 
@@ -75,7 +72,33 @@ void main()
 	    fragColor = texture(colorRT, fTex);
     else 
 	    fragColor = vec4(vec3(sbl, sbl, 0), 1.0);
+    vec3 fragPos   = texture(depthRT, fTex).xyz;
+    vec3 normal    = texture(normalRT, fTex).rgb;
+    vec3 randomVec = texture(noiseT, fTex * noiseScale).xyz; 
+    vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 TBN       = mat3(tangent, bitangent, normal);
 
+    float occlusion = 0.0;
+    for (int i = 0; i < 64; ++i) {
+    // get sample position:
+    vec3 s = TBN* vec3(ssaoK.samples[i]);
+        s = s * 0.5 + fragPos;
+        // project sample position:
+        vec4 offset = vec4(s, 1.0);
+        offset = mProj * offset;
+        offset.xy /= offset.w;
+        offset.xy = offset.xy * 0.5 + 0.5;
+  
+        //get sample depth:
+        float sampleDepth = texture(depthRT, offset.xy).z;
+  
+        // range check & accumulate:
+        float rangeCheck = smoothstep(0.0, 1.0, 0.5 / abs(fragPos.z - sampleDepth));
+        occlusion       += (sampleDepth >= s.z + 0.07 ? 1.0 : 0.0) * rangeCheck;
+    }
+    occlusion = 1.0 - (occlusion / 64.0);
+    fragColor = vec4(occlusion);
+    //fragColor = texture(depthRT, fTex);
     //FragColor = texture(colorRT, fTex);
-    //FragColor = texture(shadowRT, fTex);
 } 

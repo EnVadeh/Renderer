@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/ext.hpp>
-
+#include <random>
 #include "shader.h"
 #include "mesh.h"
 #include "model.h"
@@ -45,7 +45,7 @@ glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float ma
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
 glm::vec4 lightPos = { 0, 50, -55, 1 };
-glm::vec3 vEye = {0, 30.0, -50.0};
+glm::vec3 vEye = {90, 30.0, -50.0};
 glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
@@ -153,13 +153,47 @@ int main() {
 	std::vector<Materials> SSBOMat;
 
 	// Initialize your materials
-	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 1.0f, 1.0f };
-	Materials Mat2{ glm::vec4{1, 1, 1, 1}, 0.0f, 0.5f };
-	Materials Mat3{ glm::vec4{1, 1, 1, 1}, 0.7f, 0.6f };
+	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 0.9f, 0.4f };
+	Materials Mat2{ glm::vec4{1, 1, 1, 1}, 0.2f, 0.75f };
+	Materials Mat3{ glm::vec4{1, 1, 1, 1}, 0.75f, 0.2f };
 
 	SSBOMat.push_back(Mat1);
 	SSBOMat.push_back(Mat2);
 	SSBOMat.push_back(Mat3);
+
+
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+	std::default_random_engine generator;
+	std::vector<glm::vec4> SSAOkernel;
+	
+	for (size_t i = 0; i < 64; ++i) {
+		glm::vec4 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator), 0.0);
+		float scale = float(i) / 64.0;
+		scale = 0.1 + scale * scale * (1 - 0.1);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		sample *= scale;
+		SSAOkernel.push_back(sample);
+	}
+
+	std::vector<glm::vec3> ssaoNoise;
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			0.0f);
+		ssaoNoise.push_back(noise);
+	}
+
+	unsigned int noiseTexture;
+	glGenTextures(1, &noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// OpenGL buffer setup
 	GLuint SSBOO;
@@ -167,8 +201,14 @@ int main() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBOO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Materials) * SSBOMat.size(), SSBOMat.data(), GL_DYNAMIC_COPY);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBOO);
+	//also I'd actually love to change the Tangent and Bitangent claculation to the vertex shader rather than the CPU
 
-
+	GLuint ssaoBuffer;
+	glGenBuffers(1, &ssaoBuffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssaoBuffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec4) * SSAOkernel.size(), SSAOkernel.data(), GL_DYNAMIC_COPY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssaoBuffer);
+	
 
 	glUseProgram(firstpass);	
 	GLint vecCamPos = setUniform(firstpass, "fCamPos");
@@ -232,6 +272,12 @@ int main() {
 		glUniformMatrix4fv(SBmOV, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 		GLint TmPV= setUniform(terrainpass, "matProjView");
 		glUniformMatrix4fv(TmPV, 1, GL_FALSE, glm::value_ptr(matProjView));
+		GLint ProjLoc = setUniform(renderpass, "matProj");
+		glUniformMatrix4fv(ProjLoc, 1, GL_FALSE, glm::value_ptr(matProj));
+		GLint VLoc = setUniform(firstpass, "matView");
+		glUniformMatrix4fv(VLoc, 1, GL_FALSE, glm::value_ptr(matView));
+		GLint VLoc2 = setUniform(terrainpass, "matView");
+		glUniformMatrix4fv(VLoc2, 1, GL_FALSE, glm::value_ptr(matView));
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
@@ -247,6 +293,10 @@ int main() {
 		glDisable(GL_CULL_FACE);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		Entities.ActivateRenderTexture(renderpass);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		GLint noiseLoc = glGetUniformLocation(renderpass, "noiseT");
+		glUniform1i(noiseLoc, 3);
 		//SM.activateshadowRT(renderpass); 
 		SQ.drawQuad(renderpass);
 		//std::cout << "Drawn!" << std::endl;
