@@ -25,23 +25,6 @@ GLuint Buffers[NumBuffers];
 
 //so model coordinates are there, we have then the "position" coordinate which will take the center of the model and will transform the model coordinates to the world space
 
-glm::mat4 createNormalizationMatrix(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
-	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(
-		2.0f / (maxX - minX),
-		2.0f / (maxY - minY),
-		2.0f / (maxZ - minZ)
-	));
-
-	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(
-		-(maxX + minX) / 2.0f,
-		-(maxY + minY) / 2.0f,
-		-(maxZ + minZ) / 2.0f
-	));
-
-	return scale * translate;
-}
-
-//glm::mat4 NDC = createNormalizationMatrix(-1000, 1000, -1000, 1000, -1000, 1000);
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
 glm::vec4 lightPos = { 0, 50, -55, 1 };
@@ -56,18 +39,12 @@ glm::mat4 matSunView = glm::lookAt(glm::vec3(lightPos), vLightCenter, vUp);
 glm::mat4 matOrtho = glm::ortho(-50.f, 50.f, -50.f, 50.0f, 0.1f, 10000.0f);
 glm::mat4 matOrthoView = matOrtho * matSunView;
 glm::mat4 matProjViewSun = matProj * matSunView;
+glm::mat4 matSkyView = glm::mat4(glm::mat3(matView));
+glm::mat4 matSkyProjView = matProj * matSkyView;
 
-// I wanna make a realistic lighting 
 
 std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
-//std::string path = "E:/NEW_DOanload/dusty_old_bookshelf_free/scene.gltf";
-//std::string path = "E:/NEW_DOanload/hero_mountain/scene.gltf";
-//std::string path = "C:/Users/broia/Downloads/ordinary-house/house.obj";
-//std::string path = "C:/Users/broia/Downloads/85-cottage_obj.obj";
-//std::string path = "E:/NEW_DOanload/TransCube.obj";
-//std::string path = "E:/NEW_DOanload/simple-sphere/source/YourMesh.obj";
-//std::string path = "E:/NEW_DOanload/round-meal-low-poly-free/source/Roundmeal.obj";
-//std::string path = "C:/Users/broia/Downloads/tkf28u03u0ow-3dbuch/3dbuch/book.obj";
+std::vector<std::string> cubePaths;
 
 void processInput(GLFWwindow* window)
 {
@@ -126,40 +103,32 @@ int main() {
 
 	source = ReadShaderCode("RenderQuadShaderVS.glsl", "RenderQuadShaderFS.glsl");
 	GLuint renderpass = CreateShader(source.VertexSource, source.FragmentSource);
+
 	source = ReadShaderCode("terrainVS.glsl", "terrainFS.glsl");
 	GLuint terrainpass = CreateShader(source.VertexSource, source.FragmentSource);
+
+	source = ReadShaderCode("skyboxVS.glsl", "skyboxFS.glsl");
+	GLuint skypass = CreateShader(source.VertexSource, source.FragmentSource);
 	
-	//std::vector<Materials> SSBOMat;
-	//Materials Mat1;
-	//Mat1.Albedo = glm::vec4{ 1, 1, 1, 1 };
-	//Mat1.Mettalic = 1.0;
-	//Mat1.Roughness = 1.0;
-	//SSBOMat.push_back(Mat1);
-	//Materials Mat2;
-	//Mat2.Albedo = glm::vec4{ 1, 1, 1, 1 };
-	//Mat2.Mettalic = 0.5;
-	//Mat2.Roughness = 0.5;
-	//SSBOMat.push_back(Mat2);
-	//Materials Mat3;
-	//Mat3.Albedo = glm::vec4{ 1, 1, 1, 1 };
-	//Mat3.Mettalic = 0.7;
-	//Mat3.Roughness = 0.6;
-	//SSBOMat.push_back(Mat3);
-
-//	SSBufferObject BufferObj(SSBOMat);
-//	BufferObj.BindSSBOs();
-
-
 	std::vector<Materials> SSBOMat;
-
-	// Initialize your materials
-	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 0.9f, 0.4f };
+	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 0.3f, 0.7f };
 	Materials Mat2{ glm::vec4{1, 1, 1, 1}, 0.2f, 0.75f };
 	Materials Mat3{ glm::vec4{1, 1, 1, 1}, 0.75f, 0.2f };
 
 	SSBOMat.push_back(Mat1);
 	SSBOMat.push_back(Mat2);
 	SSBOMat.push_back(Mat3);
+
+	SSBufferObject BufferObj(SSBOMat);
+	BufferObj.BindSSBOs();
+
+	skyBuffer skyB;
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/right.jpg");
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/left.jpg");
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/top.jpg");
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/bottom.jpg");
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/front.jpg");
+	cubePaths.push_back("C:/Users/broia/Downloads/skybox/skybox/back.jpg");
 
 
 	std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
@@ -196,11 +165,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// OpenGL buffer setup
-	GLuint SSBOO;
-	glGenBuffers(1, &SSBOO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBOO);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Materials) * SSBOMat.size(), SSBOMat.data(), GL_DYNAMIC_COPY);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBOO);
 	//also I'd actually love to change the Tangent and Bitangent claculation to the vertex shader rather than the CPU
 
 	GLuint ssaoBuffer;
@@ -208,7 +172,6 @@ int main() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssaoBuffer);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec4) * SSAOkernel.size(), SSAOkernel.data(), GL_DYNAMIC_COPY);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssaoBuffer);
-	
 
 	glUseProgram(firstpass);	
 	GLint vecCamPos = setUniform(firstpass, "fCamPos");
@@ -223,6 +186,8 @@ int main() {
 	glUniformMatrix4fv(FPSunOrthoView, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 	GLint terrainProjView = setUniform(terrainpass, "matProjView");
 	glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matProjView));
+	GLint skyProjView = setUniform(skypass, "matProjView");
+	glUniformMatrix4fv(skyProjView, 1, GL_FALSE, glm::value_ptr(matSkyProjView));
 	GLint terrainOrthoView = setUniform(terrainpass, "matSunOrthoView");
 	glUniformMatrix4fv(terrainOrthoView, 1, GL_FALSE, glm::value_ptr(matOrthoView));
 	GLint FBlightPos = setUniform(shadowpass, "fLightPos");
@@ -234,21 +199,22 @@ int main() {
 	
 	glm::vec3 posi = { 1, 5, -10 };
 	glm::vec3 sizi = { 7, 7, 7 };
-
-	glm::vec3 posi2 = { +1800, 0, 0 };
-	glm::vec3 sizi2 = { 500, 500, 1000 };
 	
 	std::string TerrainTexName = "E:/NEW_DOanload/GroundTexture.jpg";
 	std::vector<std::string> terrainTextures;
 	terrainTextures.push_back(TerrainTexName);
-	TerrainBuffer SimpleTerrain(200, 200, terrainTextures);
+	cubeMap cskyBox(cubePaths);
 
+
+	TerrainBuffer SimpleTerrain(200, 200, terrainTextures);
 	ShadowMap SM;
 	GLuint ShadowBuffer = SM.setupShadowFB();
 	FrameBuffer Entities;
 	GLuint EntitiesBuffer = Entities.setupFrameBuffer();
 	ScreenQuad SQ;
 	
+	
+
 	glfwSwapInterval(60);
 
 	//put these things in a fucniton so i can just call the draw frame buffers and all these things type shit
@@ -284,8 +250,10 @@ int main() {
 		SimpleTerrain.TerrainDraw(shadowpass, 0);
 		NewModel.Draw(posi, sizi, shadowpass, 0);
 		useFB(EntitiesBuffer);
-		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
-		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
+		cskyBox.bind(skypass);
+		skyB.draw();
+		//SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
+		//NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -293,21 +261,17 @@ int main() {
 		glDisable(GL_CULL_FACE);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		Entities.ActivateRenderTexture(renderpass);
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, noiseTexture);
-		GLint noiseLoc = glGetUniformLocation(renderpass, "noiseT");
-		glUniform1i(noiseLoc, 3);
+		//glActiveTexture(GL_TEXTURE3);
+		//glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		//GLint noiseLoc = glGetUniformLocation(renderpass, "noiseT");
+		//glUniform1i(noiseLoc, 3);
 		//SM.activateshadowRT(renderpass); 
 		SQ.drawQuad(renderpass);
-		//std::cout << "Drawn!" << std::endl;
 		glfwSwapBuffers(window);
 		while ((err = glGetError()) != GL_NO_ERROR)
 				printf("OpenGL error: %d\n", err);
 		glfwPollEvents();
-		//glActiveTexture(GL_TEXTURE0);
 	}
 	glfwTerminate();
 	return 0;
-	//glDeleteBuffers(1, Buffers); Same names being used so would rather not do this rn
-	//glDeleteVertexArrays(1, VAOs);
 }

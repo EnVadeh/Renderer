@@ -72,7 +72,7 @@ void main()
 	    fragColor = texture(colorRT, fTex);
     else 
 	    fragColor = vec4(vec3(sbl, sbl, 0), 1.0);
-    vec3 fragPos   = texture(depthRT, fTex).xyz;
+/*    vec3 fragPos   = texture(depthRT, fTex).xyz;
     vec3 normal    = texture(normalRT, fTex).rgb;
     vec3 randomVec = texture(noiseT, fTex * noiseScale).xyz; 
     vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
@@ -98,7 +98,7 @@ void main()
         occlusion       += (sampleDepth >= s.z + 0.07 ? 1.0 : 0.0) * rangeCheck;
     }
     occlusion = 1.0 - (occlusion / 64.0);
-    fragColor = vec4(occlusion);
+    fragColor = vec4(occlusion);*/
     //fragColor = texture(depthRT, fTex);
     //FragColor = texture(colorRT, fTex);
 } 

@@ -28,7 +28,7 @@ layout(std430, binding = 0) buffer SSBO {
 
 layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec3 outNorm;
-layout (location = 2) out vec3 outPos;
+//layout (location = 2) out vec3 outPos;
 
 float distribution(float iso, float roughness){
 	float a = roughness * roughness;
@@ -36,14 +36,14 @@ float distribution(float iso, float roughness){
 	float iso2 = iso*iso;
 	float D = iso2 * (a2 - 1.0) + 1.0;
 	D = PI * D * D;
-	return a2/max(D, 0.0000001);
+	return a2/max(D, 0.001);
 }
 
 float geoSchlick(float NdotV, float roughness){
-	float r = roughness + 1.0;
-	float k = (r*r)/8.0;
+	float alpha = roughness * roughness;
+	float k = (alpha)/2.0;
 	float D = NdotV * (1.0 - k) + k;
-	return NdotV/D;
+	return max(NdotV, 0.001)/D;
 }
 
 float geoSmith(vec3 N, vec3 V, vec3 L, float roughness){
@@ -72,15 +72,17 @@ float shadowCalculation(vec4 sPos, float bias){
 
 void main(){
 	float fAmbient = 0.3;
-	float Met = clamp(SS.Mat[1].Mettalic, 0.0, 1.0);
-	float Rough = clamp(SS.Mat[1].Roughness, 0.0, 1.0);
+	float Met = clamp(SS.Mat[0].Mettalic, 0.0, 1.0);
+	float Rough = clamp(SS.Mat[0].Roughness, 0.0, 1.0);
 	//vec3 N = normalize(vNorm);
 	vec3 N = fNorm;
 	vec3 lightDir = normalize(vec3(fLightPos) - vec3(vPos));
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
 	vec3 fColor = vec3(1.0, 1.0, 1.0);
 	vec3 AlbedoAmbient = fAmbient * fColor;
-	vec3 reflectivity = mix(vec3(0.5), fColor, Met); //interpolation kinda
+	float reflactance = 0.8;
+	vec3 f0 = vec3(0.16 * reflactance * reflactance);
+	f0= mix(vec3(0.03), fColor, Met); //interpolation kinda
 	vec3 halfDir = normalize(lightDir + cameraDir);
 	//float distance = length(fLightPos - vPos);
 	//float lightIntensity = 20; 
@@ -95,7 +97,7 @@ void main(){
 	
 	float NDF = distribution(isoMicro, Rough);
 	float G = geoSmith(N, cameraDir, lightDir, Rough);
-	vec3 F = fres(max(dot(halfDir, cameraDir), 0.0), reflectivity);
+	vec3 F = fres(max(dot(halfDir, cameraDir), 0.0), f0);
 
 	vec3 nominator = NDF * G * F;
 	float denominator = 4.0 * max(dot(N, cameraDir), 0.0) * max(dot(N, lightDir), 0.0);
@@ -112,5 +114,5 @@ void main(){
 	vec3 color = clamp(Lo, 0.0, 1.0);
 	outColor = color;
 	outNorm = fNorm;	
-	outPos = vec3(vPos);
+	//outPos = vec3(vPos);
 }

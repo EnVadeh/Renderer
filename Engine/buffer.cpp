@@ -85,8 +85,6 @@ void TerrainBuffer::TerrainDraw(GLuint shaderID, GLuint shadowID) {
 // basicallyy frame buffers need either a Render Buffer to render to or Textures, Textures for multisamppling and render buffers for multiple queues I think or fo rlike 
 //parallel quues maybe? Like rendering frames ahead of others I thinks
 
-
-
 GLuint FrameBuffer::setupFrameBuffer() {
 	glGenFramebuffers(1, &FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
@@ -122,7 +120,6 @@ GLuint FrameBuffer::renderTexture() {
 }
 
 void FrameBuffer::ActivateRenderTexture(GLuint shaderID) {
-	
 	glUseProgram(shaderID);
 	for (size_t i = 0; i < 3; i++) {
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -155,7 +152,7 @@ SSBufferObject::SSBufferObject(std::vector<Materials> Temp) {
 	glGenBuffers(BufferAttribs::NumSSBs, SSBO);
 	for (size_t i = 0; i < BufferAttribs::NumSSBs; i++) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO[i]);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Data), &Data, GL_DYNAMIC_COPY);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Materials) * Data.size(), Data.data(), GL_DYNAMIC_COPY);
 	}
 }
 
@@ -236,6 +233,70 @@ void ShadowMap::activateshadowRT(GLuint shaderID) {
 
 GLuint ShadowMap::returnShadowRT() {
 	return shadowRT;
+}
+
+skyBuffer::skyBuffer() {
+	float temp[108] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	std::copy(std::begin(temp), std::end(temp), std::begin(data));
+	std::cout << "The shit is: " << data[20];
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);;
+	glGenBuffers(1, &Buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(BufferAttribs::vPos);
+	glVertexAttribPointer(BufferAttribs::vPos, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+}
+
+void skyBuffer::draw(){
+	glDepthMask(GL_FALSE);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDepthMask(GL_TRUE);
 }
 
 void useFB(GLuint FB) {

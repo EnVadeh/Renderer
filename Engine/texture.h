@@ -20,6 +20,17 @@ public:
 	void bind();
 };
 
+class cubeMap {
+private: 
+	std::vector<std::string> paths;
+	GLuint cubeTex;
+	GLint width;
+	GLint height;
+	GLint nrChannels;
+public:
+	cubeMap(std::vector<std::string> paths);
+	void bind(GLuint shaderID);
+};
 
 
 GLuint load_individual_texture(const char* path, const std::string& directory);

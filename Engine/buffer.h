@@ -52,7 +52,6 @@ public:
 	GLuint SSBOid(size_t index); //use this to manually give data to some SSBO from the applicaton
 };
 
-
 class ShadowMap {
 private:
 	GLuint FBO;
@@ -70,6 +69,16 @@ private:
 	GLuint Buffers[BufferAttribs::NumBuffers];
 public: 
 	void drawQuad(GLuint shaderID);
+};
+
+class skyBuffer {
+private:
+	GLuint VAO;
+	GLuint Buffer;
+	GLfloat data[108];
+public:
+	skyBuffer();
+	void draw();
 };
 
 void useFB(GLuint FB);

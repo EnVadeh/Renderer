@@ -1,6 +1,7 @@
 #version 430 core
 
 const float PI = 3.14159265359;
+const float R_PI = 0.318309886;
 
 uniform vec4 fLightPos;
 uniform vec3 fCamPos;
@@ -39,14 +40,14 @@ float distribution(float iso, float roughness){
 	float iso2 = iso*iso;
 	float D = iso2 * (a2 - 1.0) + 1.0;
 	D = PI * D * D;
-	return a2/max(D, 0.0000001);
+	return a2 /max(D, 0.001);
 }
 
 float geoSchlick(float NdotV, float roughness){
-	float r = roughness + 1.0;
-	float k = (r*r)/8.0;
+	float alpha = roughness * roughness;
+	float k = (alpha)/2.0;
 	float D = NdotV * (1.0 - k) + k;
-	return NdotV/D;
+	return max(NdotV, 0.001)/D;
 }
 
 float geoSmith(vec3 N, vec3 V, vec3 L, float roughness){
@@ -79,31 +80,32 @@ void main(){
 	fNorm = normalize(fNorm * TBN);
 	float Met = clamp(SS.Mat[1].Mettalic, 0.0, 1.0);
 	float Rough = clamp(SS.Mat[1].Roughness, 0.0, 1.0);
-	//vec3 N = normalize(vNorm);
 	vec3 N = fNorm;
 	vec3 lightDir = normalize(vec3(fLightPos) - vec3(vPos));
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
 	vec3 fColor = vec3(texture(texture_diffuse1, fTexCoord));
 	vec3 AlbedoAmbient = fAmbient * fColor;
-	vec3 reflectivity = mix(vec3(0.03), fColor, Met); //interpolation kinda
+	float reflactance = 0.5;
+	vec3 f0 = vec3(0.16 * reflactance * reflactance);
+	f0= mix(vec3(0.03), fColor, Met); //interpolation kinda
 	vec3 halfDir = normalize(lightDir + cameraDir);
-	float distance = length(fLightPos - vPos); 
+	//float distance = length(fLightPos - vPos); 
 	//float lightIntensity = 20; 
 	//float attenuation = lightIntensity / (1.0 + distance * distance);
 	float attenuation = 1;  //directional light
 	vec3 radiance = vec3(7.50) * attenuation; //Basically Flux per unit solid angle
 	float Fresnel = dot(halfDir, lightDir); //atleast for raytraing useful iirc
-	float isoMicro = max(dot(halfDir, N), 0.0);
+	float isoMicro = max(dot(halfDir, N), 0.01);
 	float bias = max(0.05 * (1.0 - dot(fNorm, lightDir)), 0.005);  
 	float shadow = shadowCalculation(sPos, bias);
 	
 	float NDF = distribution(isoMicro, Rough);
 	float G = geoSmith(N, cameraDir, lightDir, Rough);
-	//vec3 F = fres(max(dot(halfDir, cameraDir), 0.0), reflectivity);
-	vec3 F = fres(max(dot(halfDir, lightDir), 0.0), reflectivity);
+	//vec3 F = fres(max(dot(halfDir, lightDir), 0.0), f0);
+	vec3 F = fres(max(dot(halfDir, cameraDir), 0.0), f0);
 
 	vec3 nominator = NDF * G * F;
-	float denominator = 4.0 * max(dot(N, cameraDir), 0.0) * max(dot(N, lightDir), 0.0);
+	float denominator = 4.0 * max(dot(N, cameraDir), 0.001) * max(dot(N, lightDir), 0.001);
 	vec3 specular = nominator/max(denominator, 0.001);
 
 	//How much is specular reflection
@@ -115,21 +117,14 @@ void main(){
 	float NdotL = max(dot(N, lightDir), 0.0);
 	//vec3 Lo = (1.0 - shadow) * (kD * fColor/ PI + specular) * NdotL;//outgoign radiance ignoring attenuation cause my lightsource too fat away
 	vec3 Lo = (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
-	//vec3 Lo = (kD * fColor/ PI + specular) * NdotL;//outgoign radiance ignoring attenuation cause my lightsource too fat away
 	vec3 color = clamp(Lo, 0.0, 1.0);
-	//color = radiance;
-	//color = color/ (color + vec3(1.0)); //tone mapping
-	//color = pow(color, vec3(1.0/2.2));
-	
 	//float DiffPower = max(dot(fNorm, vec3(lightDir)), 0.0);
 	//vec3 refLightDir = normalize(reflect(-lightDir, fNorm));
 	//float SpecPower = pow(max(dot(refLightDir, cameraDir), 0.0), 32);
-
 	//vec3 lighting = vec3(fAmbient) + (1.0 - shadow) * (vec3(DiffPower) + vec3(SpecPower));    
 	//vec3 lighting = (vec3(DiffPower) + vec3(SpecPower));    
 	//outColor = lighting * vec3(texture(texture_diffuse1, fTexCoord));
 	outColor = color;
-	outNorm = normalize(vNorm);
-	outPos = vec3(vPos);
-	//outColor = vec3(index) * lighting;	
+	outNorm = fNorm;
+	//outPos = vec3(vPos);
 }

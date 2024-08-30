@@ -23,7 +23,7 @@ void main(){
 	gl_Position = matProjView * matModel * vec4(pos, 1.0);
 	//gl_Position = vec4(pos, 1.0);
 	fTexCoord = TexCoord;
-	vPos = matView * matModel * vec4(pos, 1.0);
+	vPos = matModel * vec4(pos, 1.0);  //dont change vPos for ssao, remember it's used for other hings
 	sPos = sunMatOrthoView * matModel * vec4(pos, 1.0); //for orthogonal shadow
 	//sPos = sunMatProjView * matModel * vec4(pos, 1.0); //for projection shadow
 	vNorm = normalize(Normal);

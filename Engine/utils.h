@@ -32,3 +32,4 @@ static const std::string RenderTextureNames[3] = {
     "normalRT",
     "depthRT"
 };
+

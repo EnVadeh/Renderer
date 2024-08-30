@@ -92,6 +92,35 @@ GLuint load_individual_texture(const char* path, const std::string& directory){
 		std::cout << "Texture failed to load at path: " << path << std::endl;
 		stbi_image_free(data);
 	}
-
 	return textureID;
+}
+
+cubeMap::cubeMap(std::vector<std::string> paths) {
+	this->paths = paths;
+	glGenTextures(1, &cubeTex);
+	glBindBuffer(GL_TEXTURE_CUBE_MAP, cubeTex);
+	for (size_t i = 0; i < paths.size(); i++) {
+		unsigned char* data = stbi_load(paths[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			std::cout << "The face loaded right now is!" << paths[i] << std::endl;
+			stbi_image_free(data);
+		}
+		else
+			std::cout << "The " << i << "th cubemap face wasn't found!" << std::endl;
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+}
+
+void cubeMap::bind(GLuint shaderID) {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, cubeTex);
+	std::string name = "skyBox";
+	GLint shaderLoc = glGetUniformLocation(shaderID, name.c_str());
+	glUniform1i(shaderLoc, 0);
 }
