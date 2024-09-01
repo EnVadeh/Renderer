@@ -13,7 +13,6 @@ in vec3 fNorm;
 in vec4 vPos;
 in vec4 sPos;
 
-
 struct Materials{
 	vec4 Albedo;
 	float Mettalic;
@@ -111,6 +110,7 @@ void main(){
 
 	float NdotL = max(dot(N, lightDir), 0.0);
 	vec3 Lo = (1.0 - shadow) * (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
+	//vec3 Lo = (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
 	vec3 color = clamp(Lo, 0.0, 1.0);
 	outColor = color;
 	outNorm = fNorm;	

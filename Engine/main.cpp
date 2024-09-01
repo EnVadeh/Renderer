@@ -28,8 +28,8 @@ GLuint Buffers[NumBuffers];
 glm::mat4 matProj = glm::perspective(float(glm::radians(45.0f)), 1.0f, 0.1f, 10000.0f);
 
 glm::vec4 lightPos = { 0, 50, -55, 1 };
-glm::vec3 vEye = {90, 30.0, -50.0};
-glm::vec3 vCenter = glm::vec3(0, 0, -1.0);//change later
+glm::vec3 vEye = {90, 10.0, -100.0};
+glm::vec3 vCenter = glm::vec3(0, 30, -1.0);//change later
 glm::vec3 vUp = {0, 1, 0};
 glm::mat4 matView = glm::lookAt(vEye, vCenter, vUp);
 glm::mat4 matProjView = matProj * matView;
@@ -206,27 +206,26 @@ int main() {
 	cubeMap cskyBox(cubePaths);
 
 
-	TerrainBuffer SimpleTerrain(200, 200, terrainTextures);
+	TerrainBuffer SimpleTerrain(150, 150, terrainTextures);
 	ShadowMap SM;
 	GLuint ShadowBuffer = SM.setupShadowFB();
 	FrameBuffer Entities;
 	GLuint EntitiesBuffer = Entities.setupFrameBuffer();
 	ScreenQuad SQ;
-	
-	
 
 	glfwSwapInterval(60);
 
 	//put these things in a fucniton so i can just call the draw frame buffers and all these things type shit
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
 
-	glDepthMask(GL_TRUE);
 	while (!glfwWindowShouldClose(window)) {
-
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
 		processInput(window);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 		GLenum err;
-		useSB(ShadowBuffer);
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
 		matView = glm::lookAt(vEye, vCenter, vUp);
@@ -244,21 +243,19 @@ int main() {
 		glUniformMatrix4fv(VLoc, 1, GL_FALSE, glm::value_ptr(matView));
 		GLint VLoc2 = setUniform(terrainpass, "matView");
 		glUniformMatrix4fv(VLoc2, 1, GL_FALSE, glm::value_ptr(matView));
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
+		useSB(ShadowBuffer);
 		SimpleTerrain.TerrainDraw(shadowpass, 0);
 		NewModel.Draw(posi, sizi, shadowpass, 0);
 		useFB(EntitiesBuffer);
 		cskyBox.bind(skypass);
 		skyB.draw();
-		//SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
-		//NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
+		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
+		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, 1000, 1000);
 		glDisable(GL_CULL_FACE);
+		glViewport(0, 0, 1000, 1000);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		Entities.ActivateRenderTexture(renderpass);
 		//glActiveTexture(GL_TEXTURE3);

@@ -83,3 +83,4 @@ public:
 
 void useFB(GLuint FB);
 void useSB(GLuint SB);
+void bindFB(GLuint FB);

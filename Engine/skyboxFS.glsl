@@ -7,6 +7,5 @@ uniform samplerCube skyBox;
 layout (location = 0) out vec3 outColor;
 
 void main(){
-	outColor = vec3(texture(skyBox, texCoord));
-	outColor = vec3(1.0, 1.0, 1.0);
+	outColor = vec3(texture(skyBox, texCoord.xyz));
 }
