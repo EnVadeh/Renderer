@@ -163,6 +163,8 @@
     <None Include="skyboxFS.glsl" />
     <None Include="skyboxVS.glsl" />
     <None Include="terrainFS.glsl" />
+    <None Include="terrainTCS.glsl" />
+    <None Include="terrainTES.glsl" />
     <None Include="terrainVS.glsl" />
   </ItemGroup>
   <ItemGroup>

@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "SSBOLoader.h"
 
+static GLuint frames_ran = 0;
 
 enum VAO_IDS { Particle, Light, Moveable, Textured_Particle, Triangle_Object, NumVAOs }; // numvaos has the value of how many elements are there in the enum. Can add other shit like {Triangles, Polygons, Circles, NumVAOs}, the enum value will be 3, starting form 0 of the left. This way we don't need to constantly update the value of How many number of vertices we need
 enum Buffer_IDs { ArrayBuffer, ElementBuffer, TextureBuffer, NumBuffers };
@@ -45,6 +46,22 @@ glm::mat4 matSkyProjView = matProj * matSkyView;
 
 std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
 std::vector<std::string> cubePaths;
+
+void GLAPIENTRY MessageCallback(GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam)
+{
+	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type, severity, message);
+}
+
+
+
 
 void processInput(GLFWwindow* window)
 {
@@ -104,12 +121,13 @@ int main() {
 	source = ReadShaderCode("RenderQuadShaderVS.glsl", "RenderQuadShaderFS.glsl");
 	GLuint renderpass = CreateShader(source.VertexSource, source.FragmentSource);
 
-	source = ReadShaderCode("terrainVS.glsl", "terrainFS.glsl");
-	GLuint terrainpass = CreateShader(source.VertexSource, source.FragmentSource);
-
 	source = ReadShaderCode("skyboxVS.glsl", "skyboxFS.glsl");
 	GLuint skypass = CreateShader(source.VertexSource, source.FragmentSource);
 	
+	TesselationSource tSource = ReadTessShaderSource("terrainVS.glsl", "terrainTCS.glsl", "terrainTES.glsl", "terrainFS.glsl");
+	GLuint terrainpass = CreateTessShader(tSource.VertexSource, tSource.TessellationControlSource, tSource.TessellationEvaluationSource, tSource.FragmentSource);
+
+
 	std::vector<Materials> SSBOMat;
 	Materials Mat1{ glm::vec4{1, 1, 1, 1}, 0.3f, 0.7f };
 	Materials Mat2{ glm::vec4{1, 1, 1, 1}, 0.2f, 0.75f };
@@ -213,11 +231,16 @@ int main() {
 	GLuint EntitiesBuffer = Entities.setupFrameBuffer();
 	ScreenQuad SQ;
 
-	glfwSwapInterval(60);
+	glfwSwapInterval(1);
 
 	//put these things in a fucniton so i can just call the draw frame buffers and all these things type shit
-
+	glEnable(GL_DEBUG_OUTPUT);
 	while (!glfwWindowShouldClose(window)) {
+		frames_ran++;
+		GLint framesLoc = setUniform(terrainpass, "iTime");
+		glUniform1ui(framesLoc, frames_ran);
+		std::cout << "frame number: " << frames_ran << std::endl;
+		
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glDepthMask(GL_TRUE);
@@ -265,8 +288,9 @@ int main() {
 		//SM.activateshadowRT(renderpass); 
 		SQ.drawQuad(renderpass);
 		glfwSwapBuffers(window);
-		while ((err = glGetError()) != GL_NO_ERROR)
-				printf("OpenGL error: %d\n", err);
+		//while ((err = glGetError()) != GL_NO_ERROR)
+		//		printf("OpenGL error: %d\n", err);
+		//glDebugMessageCallback(MessageCallback, 0);
 		glfwPollEvents();
 	}
 	glfwTerminate();

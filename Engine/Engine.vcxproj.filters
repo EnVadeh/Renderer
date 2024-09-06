@@ -109,6 +109,12 @@
     <None Include="skyboxVS.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="terrainTCS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="terrainTES.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\NEW_DOanload\test.jpg">

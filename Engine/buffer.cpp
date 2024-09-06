@@ -36,10 +36,8 @@ TerrainBuffer::TerrainBuffer(size_t width, size_t height, std::vector<std::strin
 
             indices.push_back(i0);
             indices.push_back(i2);
-            indices.push_back(i1);
-            indices.push_back(i1);
-            indices.push_back(i2);
             indices.push_back(i3);
+            indices.push_back(i1);
 
 		}
 	}
@@ -78,7 +76,8 @@ void TerrainBuffer::TerrainDraw(GLuint shaderID, GLuint shadowID) {
 	GLint terrainMTWpos = setUniform(shaderID, "matModel");
 	glUniformMatrix4fv(terrainMTWpos, 1, GL_FALSE, glm::value_ptr(terrainMTW));
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glPatchParameteri(GL_PATCH_VERTICES, 4); 
+	glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
 	glActiveTexture(GL_TEXTURE0);
 }
 
