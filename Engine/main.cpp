@@ -43,7 +43,6 @@ glm::mat4 matProjViewSun = matProj * matSunView;
 glm::mat4 matSkyView = glm::mat4(glm::mat3(matView));
 glm::mat4 matSkyProjView = matProj * matSkyView;
 
-
 std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
 std::vector<std::string> cubePaths;
 
@@ -59,8 +58,6 @@ void GLAPIENTRY MessageCallback(GLenum source,
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		type, severity, message);
 }
-
-
 
 
 void processInput(GLFWwindow* window)
@@ -218,7 +215,7 @@ int main() {
 	glm::vec3 posi = { 1, 5, -10 };
 	glm::vec3 sizi = { 7, 7, 7 };
 	
-	std::string TerrainTexName = "E:/NEW_DOanload/GroundTexture.jpg";
+	std::string TerrainTexName = "E:/NEW_DOanload/water.jpg";
 	std::vector<std::string> terrainTextures;
 	terrainTextures.push_back(TerrainTexName);
 	cubeMap cskyBox(cubePaths);

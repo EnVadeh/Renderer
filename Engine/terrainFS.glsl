@@ -69,6 +69,10 @@ float shadowCalculation(vec4 sPos, float bias){
 	return shadow;
 }
 
+float magnitude(vec3 v) {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
 void main(){
 	float fAmbient = 0.3;
 	float Met = clamp(SS.Mat[0].Mettalic, 0.0, 1.0);
@@ -76,7 +80,8 @@ void main(){
 	vec3 N = fNorm;
 	vec3 lightDir = normalize(vec3(fLightPos) - vec3(vPos));
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
-	vec3 fColor = vec3(0.0196, 0.7647, 0.8666);
+	//vec3 fColor = vec3(0.0196, 0.7647, 0.8666);
+	vec3 fColor = vec3(texture(texture_diffuse1, fTexCoord));
 	//vec3 fColor = fNorm;
 	vec3 AlbedoAmbient = fAmbient * fColor;
 	float reflactance = 1;
@@ -107,10 +112,13 @@ void main(){
 	//how much is diffuse reflection
 	vec3 kD = vec3(1.0) - kS;
 	kD *= 1.0 - Met;
-
 	float NdotL = max(dot(N, lightDir), 0.0);
-	vec3 Lo = (1.0 - shadow) * (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
-	//vec3 Lo = (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
+	vec3 Lo = (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
+	if(magnitude(Lo) < 0.18)
+		{
+			Lo = vec3(1.0);
+		}
+	Lo = (1.0 - shadow) * Lo;
 	vec3 color = clamp(Lo, 0.0, 1.0);
 	outColor = color;
 	outNorm = fNorm;	
