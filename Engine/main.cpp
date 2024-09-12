@@ -260,7 +260,6 @@ int main() {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
-		glEnable(GL_STENCIL_TEST);
 		GLenum err;
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
@@ -285,22 +284,27 @@ int main() {
 		useFB(EntitiesBuffer);
 		cskyBox.bind(skypass);
 		skyB.draw();
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);             //Disable writting in color buffer
-		glDepthMask(GL_FALSE);                                  //Disable writting in depth buffer
+		glEnable(GL_STENCIL_TEST);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glDepthMask(GL_FALSE);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
-		glDisable(GL_STENCIL);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glDepthMask(GL_TRUE);
+		//glDisable(GL_STENCIL_TEST);
 
 		glStencilFunc(GL_EQUAL, 1, 0xFF);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		//glFrontFace(GL_CW);
 		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
 		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
+		//glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matReflectedProjView));
+		//glUniformMatrix4fv(mPV, 1, GL_FALSE, glm::value_ptr(matReflectedProjView));
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glDisable(GL_STENCIL_TEST);
 		glDisable(GL_CULL_FACE);
 		glViewport(0, 0, 1000, 1000);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
