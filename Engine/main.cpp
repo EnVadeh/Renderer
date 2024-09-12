@@ -42,6 +42,8 @@ glm::mat4 matOrthoView = matOrtho * matSunView;
 glm::mat4 matProjViewSun = matProj * matSunView;
 glm::mat4 matSkyView = glm::mat4(glm::mat3(matView));
 glm::mat4 matSkyProjView = matProj * matSkyView;
+glm::mat4 matReflection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f));
+glm::mat4 matReflectedProjView = matProj * matReflection * matView;
 
 std::string path = "E:/NEW_DOanload/backpack/backpack.obj";
 std::vector<std::string> cubePaths;
@@ -121,8 +123,12 @@ int main() {
 	source = ReadShaderCode("skyboxVS.glsl", "skyboxFS.glsl");
 	GLuint skypass = CreateShader(source.VertexSource, source.FragmentSource);
 	
+	source = ReadShaderCode("reflectionVS.glsl", "reflectionFS.glsl");
+	GLuint refpass = CreateShader(source.VertexSource, source.FragmentSource);
+	
 	TesselationSource tSource = ReadTessShaderSource("terrainVS.glsl", "terrainTCS.glsl", "terrainTES.glsl", "terrainFS.glsl");
 	GLuint terrainpass = CreateTessShader(tSource.VertexSource, tSource.TessellationControlSource, tSource.TessellationEvaluationSource, tSource.FragmentSource);
+
 
 
 	std::vector<Materials> SSBOMat;
@@ -209,6 +215,15 @@ int main() {
 	glUniform4fv(FBlightPos, 1, glm::value_ptr(lightPos));
 	GLint TPLightPos = setUniform(terrainpass, "fLightPos");
 	glUniform4fv(TPLightPos, 1, glm::value_ptr(lightPos));
+	GLint RProjView = setUniform(refpass, "matProjView");
+	glUniformMatrix4fv(RProjView, 1,GL_FALSE, glm::value_ptr(matProjView));
+	GLint RSunProjView = setUniform(refpass, "matSunOrthoView");
+	glUniformMatrix4fv(RSunProjView, 1, GL_FALSE, glm::value_ptr(matProjViewSun));
+	GLint RPlightPos = setUniform(refpass, "fLightPos");
+	glUniform4fv(RPlightPos, 1, glm::value_ptr(lightPos));
+	GLint RPCamPos = setUniform(refpass, "fCamPos");
+	glUniform3fv(RPCamPos, 1, glm::value_ptr(vEye));
+
 
 	Model NewModel(&path[0]);
 	
@@ -245,6 +260,7 @@ int main() {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
+		glEnable(GL_STENCIL_TEST);
 		GLenum err;
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
@@ -269,11 +285,22 @@ int main() {
 		useFB(EntitiesBuffer);
 		cskyBox.bind(skypass);
 		skyB.draw();
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);             //Disable writting in color buffer
+		glDepthMask(GL_FALSE);                                  //Disable writting in depth buffer
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
+		glDisable(GL_STENCIL);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDepthMask(GL_TRUE);
+
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
 		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//reminder to change the draw functions so that they check to see if shadowMap exists or not and activates it!
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glDisable(GL_CULL_FACE);
 		glViewport(0, 0, 1000, 1000);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

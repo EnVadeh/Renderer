@@ -8,7 +8,6 @@ uniform vec3 fCamPos;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D shadowRT;
 
-in float wH;
 in vec2 fTexCoord;
 in vec3 fNorm;
 in vec4 vPos;
@@ -83,8 +82,7 @@ void main(){
 	vec3 cameraDir = normalize(fCamPos - vec3(vPos));
 	//vec3 fColor = vec3(0.0196, 0.7647, 0.8666);
 	vec3 fColor = vec3(texture(texture_diffuse1, fTexCoord));
-	//if(wH > 1.8)
-		//fColor = vec3(1.0);
+
 	//vec3 fColor = fNorm;
 	vec3 AlbedoAmbient = fAmbient * fColor;
 	float reflactance = 1;
@@ -117,8 +115,6 @@ void main(){
 	kD *= 1.0 - Met;
 	float NdotL = max(dot(N, lightDir), 0.0);
 	vec3 Lo = (1.0 - shadow) * (kD * fColor/ PI + specular) * NdotL * radiance;//outgoign radiance ignoring attenuation cause my lightsource too fat away
-	//if(wH > 1.8)
-		//Lo = Lo *2;
 	vec3 color = clamp(Lo, 0.0, 1.0);
 	outColor = color;
 	outNorm = fNorm;	

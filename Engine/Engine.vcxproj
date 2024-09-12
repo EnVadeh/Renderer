@@ -156,6 +156,8 @@
   <ItemGroup>
     <None Include="firstpassFS.glsl" />
     <None Include="firstpassVS.glsl" />
+    <None Include="reflectionFS.glsl" />
+    <None Include="reflectionVS.glsl" />
     <None Include="RenderQuadShaderFS.glsl" />
     <None Include="RenderQuadShaderVS.glsl" />
     <None Include="shadowmapFS.glsl" />

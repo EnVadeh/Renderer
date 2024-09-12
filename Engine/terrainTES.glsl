@@ -13,10 +13,12 @@ in vec4 tcPosition[];
 in vec2 tcTexCoord[];
 in vec3 tcNormal[];
 
+out float wH;
 out vec4 vPos; 
 out vec2 fTexCoord;
 out vec3 fNorm;
 out vec4 sPos;
+
 
 float wave1(vec2 pos){
     float amplitude = 0.5;
@@ -67,15 +69,15 @@ void main()
     vec4 pos1 = mix(tcPosition[0], tcPosition[1], u);
     vec4 pos2 = mix(tcPosition[3], tcPosition[2], u);
     vPos = mix(pos1, pos2, v);
-    vPos.y += waveHeight(vPos.xz);
-    
+    wH = waveHeight(vPos.xz);
+    //vPos.y += wH;
     vec2 tex1 = mix(tcTexCoord[0], tcTexCoord[1], u);
     vec2 tex2 = mix(tcTexCoord[3], tcTexCoord[2], u);
     fTexCoord = mix(tex1, tex2, v);
 
-    fNorm = calculateNormal(vPos.xz);
+    //fNorm = calculateNormal(vPos.xz);
+    fNorm = vec3(0, 1, 0);
     //because waves happening, need some shit
-
 
     sPos = matSunOrthoView * matModel * vPos; //for orthogonal shadow
     gl_Position = matProjView * matModel * vPos;
