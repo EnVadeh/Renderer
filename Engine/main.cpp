@@ -252,14 +252,7 @@ int main() {
 		GLint framesLoc = setUniform(terrainpass, "iTime");
 		glUniform1ui(framesLoc, frames_ran);
 		std::cout << "frame number: " << frames_ran << std::endl;
-		
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);
 		processInput(window);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
 		GLenum err;
 		GLint vecLightPos = setUniform(firstpass, "fLightPos");
 		glUniform4fv(vecLightPos, 1, glm::value_ptr(lightPos));
@@ -284,19 +277,22 @@ int main() {
 		useFB(EntitiesBuffer);
 		cskyBox.bind(skypass);
 		skyB.draw();
-		glEnable(GL_STENCIL_TEST);
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glDepthMask(GL_FALSE);
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 		glDepthMask(GL_TRUE);
-		//glDisable(GL_STENCIL_TEST);
-
-		glStencilFunc(GL_EQUAL, 1, 0xFF);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		//glFrontFace(GL_CW);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
+		//glEnable(GL_STENCIL_TEST);
+		//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		//glDepthMask(GL_FALSE);
+		//glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		//SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
+		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		//glDepthMask(GL_TRUE);
+		//glStencilFunc(GL_EQUAL, 1, 0xFF);
+		//glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		SimpleTerrain.TerrainDraw(terrainpass, SM.returnShadowRT());
 		NewModel.Draw(posi, sizi, firstpass, SM.returnShadowRT());
 		//glUniformMatrix4fv(terrainProjView, 1, GL_FALSE, glm::value_ptr(matReflectedProjView));
@@ -306,6 +302,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glDisable(GL_STENCIL_TEST);
 		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
 		glViewport(0, 0, 1000, 1000);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		Entities.ActivateRenderTexture(renderpass);

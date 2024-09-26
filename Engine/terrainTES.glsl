@@ -70,7 +70,7 @@ void main()
     vec4 pos2 = mix(tcPosition[3], tcPosition[2], u);
     vPos = mix(pos1, pos2, v);
     wH = waveHeight(vPos.xz);
-    //vPos.y += wH;
+    vPos.y += wH;
     vec2 tex1 = mix(tcTexCoord[0], tcTexCoord[1], u);
     vec2 tex2 = mix(tcTexCoord[3], tcTexCoord[2], u);
     fTexCoord = mix(tex1, tex2, v);

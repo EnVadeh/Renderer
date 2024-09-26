@@ -103,11 +103,9 @@ GLuint FrameBuffer::setupFrameBuffer() {
 	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, render_texture, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, render_texture[i], 0);
 	//std::cout << "Render Texture" << i << " is: " << render_texture[i] << std::endl;
-	//setupRenderBuffer();
+	setupRenderBuffer();
 	//std::cout << "WTF!!! FBO NOT COMPLETE!!!! OR NOT!!! " << ": " << glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-	//glDrawBuffer(GL_NONE);
-	//glReadBuffer(GL_NONE);
 	}
 	glDrawBuffers(3, DrawBuffers);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -133,9 +131,8 @@ void FrameBuffer::setupRenderBuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 	glGenRenderbuffers(1, &RBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH, 2048, 2048);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH, GL_RENDERBUFFER, RBO);
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, 2048, 2048);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -310,7 +307,7 @@ void bindFB(GLuint FB) {
 }
 void useSB(GLuint SB) {
 	glViewport(0, 0, 2048, 2048);
-	glBindFramebuffer(GL_FRAMEBUFFER, SB);//
+	glBindFramebuffer(GL_FRAMEBUFFER, SB);
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 

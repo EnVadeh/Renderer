@@ -34,7 +34,7 @@ private:
 public: 
 	GLuint setupFrameBuffer();
 	GLuint renderTexture();
-	void setupRenderBuffer();
+	void setupRenderBuffer(); //for depth and stencil shit
 	void readFromBuffer();
 	void ActivateRenderTexture(GLuint shaderID);
 };
